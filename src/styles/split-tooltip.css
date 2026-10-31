@@ -1,0 +1,106 @@
+/* ============================================================
+   SPLIT INFO TOOLTIP (src/ui/split-tooltip.js)
+   A card beside the pointer while hovering a split on the track. It never takes the pointer,
+   so moving along the track keeps hovering the splits underneath.
+   ============================================================ */
+.split-tooltip {
+  position: fixed;
+  z-index: 1950;
+  left: 0;
+  top: 0;
+  min-width: 190px;
+  max-width: 280px;
+  padding: 10px 12px;
+  background: rgba(15, 23, 42, 0.96);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 10px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.75);
+  color: #f1f5f9;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+  pointer-events: none;
+}
+
+.split-tooltip[hidden] {
+  display: none;
+}
+
+.split-tip-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.split-tip-icon {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  flex-shrink: 0;
+  border-radius: 6px;
+}
+
+.split-tip-title {
+  min-width: 0;
+}
+
+.split-tip-name {
+  font-size: 15px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.split-tip-pos,
+.split-tip-muted,
+.split-tip-caption {
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+.split-tip-status {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 8px;
+  font-family: "JetBrains Mono", Consolas, monospace;
+}
+
+.split-tip-delta {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.split-tip-time {
+  font-weight: 700;
+}
+
+.split-tip-segments {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.split-tip-caption {
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 2px;
+}
+
+.split-tip-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  line-height: 1.6;
+}
+
+.split-tip-row span:last-child {
+  font-family: "JetBrains Mono", Consolas, monospace;
+  font-weight: 700;
+}
+
+.split-tip-best span:last-child {
+  color: var(--gold-color);
+}
+
+.split-tip-save span:last-child {
+  color: var(--timer-green);
+}

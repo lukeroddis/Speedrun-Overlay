@@ -20,6 +20,7 @@
   <link rel="stylesheet" href="src/styles/ghost-markers.css">
   <link rel="stylesheet" href="src/styles/toast.css">
   <link rel="stylesheet" href="src/styles/race-pins.css">
+  <link rel="stylesheet" href="src/styles/split-tooltip.css">
   <link rel="stylesheet" href="src/styles/leaderboard.css">
   <link rel="stylesheet" href="src/styles/leaderboard-animations.css">
   <link rel="stylesheet" href="src/styles/leaderboard-badges.css">
@@ -350,7 +351,7 @@
     <div class="widget-popover-body">
       <!-- Track View (src/ui/track-views.js) and the split text it shows -->
       <div class="modal-section-title">Track View</div>
-      <div class="sr-rows" data-settings="trackView splitNames splitDeltas splitTimes"></div>
+      <div class="sr-rows" data-settings="trackView splitNames splitDeltas splitTimes splitTooltip"></div>
 
       <!-- Track Orientation -->
       <div class="modal-section-title">Track Orientation</div>
@@ -652,6 +653,7 @@
   <script src="src/core/time-utils.js"></script>
   <script src="src/core/split-engine.js"></script>
   <script src="src/core/split-evaluation.js"></script>
+  <script src="src/core/split-info.js"></script>
   <script src="src/core/overlay-state.js"></script>
   <script src="src/core/ghost-math.js"></script>
   <script src="src/core/livesplit-client.js"></script>
@@ -708,6 +710,7 @@
   <script src="src/ui/track-density.js"></script>
   <script src="src/ui/track-scroll.js"></script>
   <script src="src/ui/ghost-runner.js"></script>
+  <script src="src/ui/split-tooltip.js"></script>
   <script src="src/ui/race-controls.js"></script>
   <script src="src/ui/dock-bridge.js"></script>
   <script src="src/ui/ws-log-panel.js"></script>

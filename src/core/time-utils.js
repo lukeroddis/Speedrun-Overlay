@@ -283,6 +283,24 @@
     return `${m}:${sPad}`;
   }
 
+  /**
+   * Formats a segment duration with tenths: "27.4", "1:05.3", "1:10:00.0" ("" when unknown).
+   * @param {number} sec - Seconds
+   * @returns {string}
+   */
+  function formatSegmentTime(sec) {
+    if (sec === null || sec === undefined || isNaN(sec) || sec < 0) return "";
+    const tenths = Math.floor(sec * 10 + 1e-6);
+    const totalSec = Math.floor(tenths / 10);
+    const frac = tenths % 10;
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    if (h > 0) return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}.${frac}`;
+    if (m > 0) return `${m}:${String(s).padStart(2, "0")}.${frac}`;
+    return `${s}.${frac}`;
+  }
+
   // Export to namespace and window
   window.LiveSplit = window.LiveSplit || {};
   window.LiveSplit.Time = {
@@ -291,7 +309,8 @@
     formatTargetTime,
     formatDeltaSeconds,
     formatDeltaLive,
-    formatGapTime
+    formatGapTime,
+    formatSegmentTime
   };
 
   // Backward compatibility exports

@@ -322,6 +322,24 @@
       });
     });
 
+    it("splitTooltip reads the stored switch and sets it through the overlay", () => {
+      const KEYS = window.LiveSplit.Storage.KEYS;
+      const saved = localStorage.getItem(KEYS.SPLIT_TOOLTIP);
+      try {
+        const app = makeApp();
+        app.setSplitTooltipEnabled = (v) => { app.calls.push(["splitTooltip", v]); localStorage.setItem(KEYS.SPLIT_TOOLTIP, String(v)); };
+        const s = R.createSettingsController(app);
+        localStorage.removeItem(KEYS.SPLIT_TOOLTIP);
+        assertEqual(s.get("splitTooltip"), true, "on by default");
+        s.set("splitTooltip", false);
+        assertEqual(app.calls.pop(), ["splitTooltip", false]);
+        assertEqual(s.get("splitTooltip"), false);
+      } finally {
+        if (saved === null) localStorage.removeItem(KEYS.SPLIT_TOOLTIP);
+        else localStorage.setItem(KEYS.SPLIT_TOOLTIP, saved);
+      }
+    });
+
     it("ghosts are a group of their own (the dock's Ghost Pins section)", () => {
       assertEqual(R.listSettings("dock", "ghosts").map((d) => d.id), ["ghostsOn", "ghosts"]);
     });

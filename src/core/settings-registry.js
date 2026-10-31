@@ -158,6 +158,15 @@
       set: (app, value) => window.hudLayout?.setTrackText?.("times", value)
     },
     {
+      id: "splitTooltip",
+      label: "Split info on hover",
+      group: "track",
+      where: ["dock", "widget"],
+      type: "bool",
+      get: () => window.LiveSplit.SplitTooltip.isEnabled(),
+      set: (app, value) => app.setSplitTooltipEnabled(value)
+    },
+    {
       id: "golds",
       label: "Gold splits",
       group: "track",

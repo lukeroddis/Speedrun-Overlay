@@ -39,6 +39,7 @@
    * split times per split index (null where unknown), best segments are durations.
    * @typedef {Object} OverlayState
    * @property {string[]} splitsList - Split names in order
+   * @property {Array<string|null>} splitIcons - Split icon data URLs from the .lss (null without one; [] for cached / default splits)
    * @property {Array<number|null>} comparisonTimes - Active comparison curve for the active timing method
    * @property {Array<number|null>} comparisonTimesGT - Personal Best curve, GameTime
    * @property {Array<number|null>} comparisonTimesRT - Personal Best curve, RealTime
@@ -74,6 +75,7 @@
     return {
       // Loaded splits and comparison curves (cumulative seconds; best segments are durations)
       splitsList: [],
+      splitIcons: [],
       comparisonTimes: [],
       comparisonTimesGT: [],
       comparisonTimesRT: [],

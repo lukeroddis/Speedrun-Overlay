@@ -61,6 +61,7 @@ Traditional LiveSplit layouts consume substantial vertical screen space over mod
 * **LiveSplit delta colours** for ahead/behind and gaining/losing, gold for best segments, and a red pulse when the current split runs overdue.
 * **Readable at any density**: split names tilt to 40° as the track fills up.
 * **Two track views**: the **Network Track** (nodes joined by bars) or **Minimalist** (one coloured bar per split, nothing else). Split names, deltas and times can be switched on or off for each view.
+* **Split info on hover**: hover any split (in a browser, or in OBS through the browser source's *Interact* window) for its icon, delta or expected segment time, and its segment times this run, in your PB, your gold, on average and in the World Record (when your splits have a World Record comparison), plus the time you could still save on it.
 
 ### 2. Ghost Runners
 
@@ -201,7 +202,6 @@ For WebSocket architecture details, LiveSplit protocol constraints, algorithm sp
 ## 🔮 Future Roadmap & Proposals
 
 For post-v2.0.0 feature specifications and technical explorations, see:
-* **Extreme minimalist track bar**: hover over a split's bar to see its information (the Minimalist track view is in).
 * **Current split overlay**: Show segment time, personal best, world record etc
 * **Minimalist graph overlay**: Visual representation of deltas over time
 * **Racer tile improvements**: Hover over for context menu with runner information

@@ -26,6 +26,7 @@
     VISIBLE_SPLITS: "livesplit_visible_splits",
     ALWAYS_SHOW_LAST: "livesplit_always_show_last_split",
     SPLIT_ANGLE: "livesplit_split_angle",
+    SPLIT_TOOLTIP: "livesplit_split_tooltip",
 
     // Ghosts & race
     GHOST_COMPARISON: "livesplit_ghost_comparison",
