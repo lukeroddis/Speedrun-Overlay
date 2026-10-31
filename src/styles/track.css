@@ -185,6 +185,14 @@
   bottom: 4px;
 }
 
+/* Text on segment (track-style "textAnchor"): each split's bar runs from the previous node to its
+   own, centred on the split's left edge, so anchoring the text there centres it along that bar.
+   The start node and the first visible split have no bar of their own and keep it on the node. */
+.track.text-on-segment:not(.vertical) .split-item:not(.origin-node):not(.first-visible-node) .split-name,
+.track.text-on-segment:not(.vertical) .split-item:not(.origin-node):not(.first-visible-node) .split-delta {
+  left: 0;
+}
+
 /* Connector Bar */
 .segment-bar-bg {
   position: absolute;

@@ -23,6 +23,7 @@
     orientation: "horizontal", // 'horizontal' | 'vertical'
     namePos: "top",        // 'top' | 'bottom' | 'left' | 'right'
     deltaPos: "bottom",    // 'top' | 'bottom' | 'left' | 'right'
+    textAnchor: "node",    // 'node' | 'segment' (horizontal: center split text on the bar leading into the node)
     nameFontSize: 17,      // px
     deltaFontSize: 15,     // px
     barHeight: 6,          // px
@@ -43,7 +44,7 @@
   const WIDGET_STYLE_KEYS = Object.freeze({
     title: Object.freeze(["logoHeight", "bgTitle"]),
     timers: Object.freeze(["bgTimers"]),
-    track: Object.freeze(["orientation", "namePos", "deltaPos", "nameFontSize", "deltaFontSize", "barHeight",
+    track: Object.freeze(["orientation", "namePos", "deltaPos", "textAnchor", "nameFontSize", "deltaFontSize", "barHeight",
       "dotSize", "bgTrack"]),
     ghosts: Object.freeze(["ghostPinLength", "ghostPinSize", "pinPos", "pinLane"])
   });
@@ -302,6 +303,7 @@
       track.classList.remove("pins-top", "pins-bottom", "pins-left", "pins-right");
       track.classList.add(`pins-${resolvePinSide(currentTrackStyle)}`);
       track.classList.toggle("pin-lane", currentTrackStyle.pinLane !== false);
+      track.classList.toggle("text-on-segment", !isVert && currentTrackStyle.textAnchor === "segment");
 
       syncTrackModalUI();
 

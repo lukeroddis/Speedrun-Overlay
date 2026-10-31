@@ -106,3 +106,10 @@
   transform: rotate(40deg) scale(1.08);
 }
 
+/* Text on segment: tilted names start from the middle of the bar leading into the node */
+.track.angled-text.text-on-segment .split-item:not(.origin-node):not(.first-visible-node) .split-name {
+  left: 4px;
+}
+.track.angled-text.text-on-segment .split-item:not(.origin-node):not(.first-visible-node) .split-delta {
+  left: 0 !important;
+}

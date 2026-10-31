@@ -21,6 +21,7 @@
     <div id="opposing-hint"></div>
     ${seg("ctrl-name-pos", ["top", "bottom", "left", "right"], posClass)}
     ${seg("ctrl-delta-pos", ["top", "bottom", "left", "right"], posClass)}
+    <div id="row-text-anchor">${seg("ctrl-text-anchor", ["node", "segment"])}</div>
     ${seg("ctrl-modal-angle", ["auto", "angled", "flat"])}
     <select id="select-split-angle"><option value="auto">auto</option><option value="angled">angled</option><option value="flat">flat</option></select>
     <input type="range" id="slider-name-font"><span id="val-name-font"></span>
@@ -128,6 +129,22 @@
       localStorage.setItem(KEYS.SPLIT_ANGLE, "flat");
       click("ctrl-delta-pos", "bottom");
       assertEqual([style.namePos, style.deltaPos], ["bottom", "bottom"], "flat again: independent");
+    }));
+
+    it("text alignment syncs, saves the choice, and is hidden on a vertical track", () => withPanel(({ el, panel, style, log, click, active }) => {
+      panel.bind();
+      panel.sync(style);
+      assertEqual(active("ctrl-text-anchor"), "node", "missing value reads as On Node");
+      assertEqual(el("row-text-anchor").style.display, "");
+
+      click("ctrl-text-anchor", "segment");
+      assertEqual(style.textAnchor, "segment");
+      assertEqual([log.applied, log.saved], [1, 1]);
+      panel.sync(style);
+      assertEqual(active("ctrl-text-anchor"), "segment");
+
+      panel.sync(Object.assign({}, style, { orientation: "vertical", namePos: "left", deltaPos: "right" }));
+      assertEqual(el("row-text-anchor").style.display, "none");
     }));
 
     it("vertical positions stay independent even with a saved 40° angle (names never tilt there)", () => withPanel(({ el, panel, style, click, active }) => {

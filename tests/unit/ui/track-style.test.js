@@ -274,6 +274,27 @@
           track.className = origClass;
         }
       });
+
+      it("applyStyle sets text-on-segment only for a horizontal track anchored on the segment", () => {
+        const track = document.getElementById("track");
+        const origClass = track.className;
+        try {
+          let style = Object.assign({}, window.LiveSplit.TrackStyle.DEFAULT_TRACK_STYLE);
+          const engine = window.LiveSplit.TrackStyle.createTrackStyle({ getCurrentStyle: () => style });
+          engine.applyStyle();
+          assert(!track.classList.contains("text-on-segment"), "text sits on the node by default");
+
+          style = Object.assign({}, style, { textAnchor: "segment" });
+          engine.applyStyle();
+          assert(track.classList.contains("text-on-segment"), "horizontal segment anchoring");
+
+          style = Object.assign({}, style, { orientation: "vertical", namePos: "left", deltaPos: "right" });
+          engine.applyStyle();
+          assert(!track.classList.contains("text-on-segment"), "vertical tracks ignore it");
+        } finally {
+          track.className = origClass;
+        }
+      });
     });
 
 })();
