@@ -177,6 +177,11 @@ function updateTrackDensityAndAngle() {
   }
 }
 
+// Split info card on hover (src/ui/split-tooltip.js)
+const splitTooltip = window.LiveSplit.SplitTooltip.createSplitTooltip({
+  getState: () => state
+});
+
 function setupTrackScrollInteractions() {
   window.LiveSplit.TrackScroll.setupTrackScrollInteractions({
     isTrackWindowed: app.isTrackWindowed,
@@ -219,6 +224,7 @@ function initOverlay() {
 
   window.LiveSplit.SettingsMenu.initSettingsMenuDraggable();
   setupTrackScrollInteractions();
+  splitTooltip.bind();
   app.loadCachedSplits();
   updateTrackDensityAndAngle();
 
@@ -268,6 +274,7 @@ Object.assign(app, {
   setVisibleSplits: trackDensity.setVisibleSplits,
   updateTrackDensityAndAngle,
   setupTrackScrollInteractions,
+  setSplitTooltipEnabled: splitTooltip.setEnabled,
   resetSettingsMenuPosition: window.LiveSplit.SettingsMenu.resetSettingsMenuPosition,
   toggleSettingsMenu: window.LiveSplit.SettingsMenu.toggleSettingsMenu,
   isDevModeActive: window.LiveSplit.DevMode.isDevModeActive,

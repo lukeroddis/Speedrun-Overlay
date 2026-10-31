@@ -84,6 +84,20 @@
       "description": "Styling, geometry, and layout orientation",
       "properties": {
         "orientation": { "type": "string", "enum": ["horizontal", "vertical"] },
+        "trackView": { "type": "string", "description": "How the splits are drawn: a TRACK_VIEWS id from src/ui/track-views.js (network, minimalist)" },
+        "viewText": {
+          "type": "object",
+          "description": "Split text shown per track view; a missing view or part uses that view's default",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "names": { "type": "boolean" },
+              "deltas": { "type": "boolean" },
+              "times": { "type": "boolean" }
+            }
+          }
+        },
+        "textAnchor": { "type": "string", "enum": ["node", "segment"] },
         "namePos": { "type": "string", "enum": ["top", "bottom", "left", "right"] },
         "deltaPos": { "type": "string", "enum": ["top", "bottom", "left", "right"] },
         "bgOpacity": { "type": "integer", "minimum": 0, "maximum": 95 },

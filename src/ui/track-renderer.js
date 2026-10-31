@@ -218,7 +218,8 @@
     // 2. All Splits
     splitsList.forEach((name, i) => {
       const item = document.createElement("div");
-      item.className = "split-item";
+      // final-node: track views that trim the space past the last bar (src/styles/track-minimalist.css)
+      item.className = i === splitsList.length - 1 ? "split-item final-node" : "split-item";
       item.id = `item-${i}`;
 
       const segBg = document.createElement("div");

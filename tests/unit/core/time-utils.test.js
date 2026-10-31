@@ -196,5 +196,15 @@
         assertEqual(tu.formatDeltaSeconds(4200.0), "+1:10:00");
         assertEqual(tu.formatDeltaSeconds(-3665.0), "-1:01:05");
       });
+
+      it("formatSegmentTime keeps tenths at every length", () => {
+        assertEqual(tu.formatSegmentTime(27.46), "27.4");
+        assertEqual(tu.formatSegmentTime(0), "0.0");
+        assertEqual(tu.formatSegmentTime(65.3), "1:05.3");
+        assertEqual(tu.formatSegmentTime(4200), "1:10:00.0");
+        assertEqual(tu.formatSegmentTime(null), "");
+        assertEqual(tu.formatSegmentTime(-1), "");
+        assertEqual(tu.formatSegmentTime(NaN), "");
+      });
     });
 })();

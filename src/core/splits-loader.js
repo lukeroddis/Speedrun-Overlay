@@ -51,6 +51,7 @@
         const parsed = window.LiveSplit.SplitEngine.parseLssXml(xmlText);
         if (parsed) {
           state.splitsList = parsed.splitsList;
+          state.splitIcons = parsed.splitIcons || [];
           state.comparisonTimesGT = parsed.comparisonTimesGT;
           state.comparisonTimesRT = parsed.comparisonTimesRT;
           state.bestSegmentTimesGT = parsed.bestSegmentTimesGT;
@@ -150,6 +151,7 @@
       if (cachedSegments) {
         try {
           state.splitsList = JSON.parse(cachedSegments);
+          state.splitIcons = [];
           state.comparisonTimesGT = JSON.parse(safeStorage.getItem(STORAGE_KEYS.TARGETS_GT) || "[]");
           state.comparisonTimesRT = JSON.parse(safeStorage.getItem(STORAGE_KEYS.TARGETS_RT) || "[]");
           state.bestSegmentTimesGT = JSON.parse(safeStorage.getItem(STORAGE_KEYS.GOLDS_GT) || "[]");
@@ -215,6 +217,7 @@
 
       // Fallback generic splits template
       state.splitsList = [...app.DEFAULT_SPLITS];
+      state.splitIcons = [];
       state.comparisonTimesGT = [...app.DEFAULT_TARGETS];
       state.comparisonTimesRT = [...app.DEFAULT_TARGETS];
       state.bestSegmentTimesGT = [...app.DEFAULT_BESTS];

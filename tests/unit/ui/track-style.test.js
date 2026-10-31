@@ -274,6 +274,78 @@
           track.className = origClass;
         }
       });
+
+      it("applyStyle sets the view-<id> class and hides the split text the view switches off", () => {
+        const track = document.getElementById("track");
+        const origClass = track.className;
+        try {
+          let style = Object.assign({}, window.LiveSplit.TrackStyle.DEFAULT_TRACK_STYLE);
+          const engine = window.LiveSplit.TrackStyle.createTrackStyle({ getCurrentStyle: () => style });
+          engine.applyStyle();
+          assert(track.classList.contains("view-network") && track.dataset.trackView === "network");
+          assert(["names", "deltas", "times"].every((part) => !track.classList.contains("hide-split-" + part)));
+
+          style = Object.assign({}, style, { trackView: "minimalist", textAnchor: "segment" });
+          engine.applyStyle();
+          assert(track.classList.contains("view-minimalist") && !track.classList.contains("view-network"), "one view class");
+          assert(["names", "deltas", "times"].every((part) => track.classList.contains("hide-split-" + part)), "Minimalist hides all by default");
+          assert(!track.classList.contains("text-on-segment"), "views whose bars are the splits place text themselves");
+
+          style = Object.assign({}, style, { viewText: { minimalist: { names: true, times: true } } });
+          engine.applyStyle();
+          assert(!track.classList.contains("hide-split-names") && !track.classList.contains("hide-split-times"));
+          assert(track.classList.contains("hide-split-deltas"), "unset parts keep the view's default");
+
+          style = Object.assign({}, style, { trackView: "bogus" });
+          engine.applyStyle();
+          assert(track.classList.contains("view-network"), "unknown views fall back to the default");
+        } finally {
+          track.className = origClass;
+          delete track.dataset.trackView;
+        }
+      });
+
+      it("setTrackView and setTrackText apply and save the style", () => withCleanTrackStyleEnv(() => {
+        const track = document.getElementById("track");
+        const origClass = track.className;
+        try {
+          const style = Object.assign({}, window.LiveSplit.TrackStyle.DEFAULT_TRACK_STYLE);
+          const engine = window.LiveSplit.TrackStyle.createTrackStyle({ getCurrentStyle: () => style });
+          engine.setTrackView("minimalist");
+          assertEqual(style.trackView, "minimalist");
+          assertEqual(JSON.parse(localStorage.getItem(engine.STORAGE_KEY)).trackView, "minimalist");
+          engine.setTrackView("bogus");
+          assertEqual(style.trackView, "network", "unknown ids store the default view");
+
+          engine.setTrackText("names", false);
+          assertEqual(style.viewText, { network: { names: false, deltas: true, times: true } });
+          assert(track.classList.contains("hide-split-names"));
+          assert(Object.isFrozen(window.LiveSplit.TrackStyle.DEFAULT_TRACK_STYLE.viewText), "the default map is never written");
+        } finally {
+          track.className = origClass;
+        }
+      }));
+
+      it("applyStyle sets text-on-segment only for a horizontal track anchored on the segment", () => {
+        const track = document.getElementById("track");
+        const origClass = track.className;
+        try {
+          let style = Object.assign({}, window.LiveSplit.TrackStyle.DEFAULT_TRACK_STYLE);
+          const engine = window.LiveSplit.TrackStyle.createTrackStyle({ getCurrentStyle: () => style });
+          engine.applyStyle();
+          assert(!track.classList.contains("text-on-segment"), "text sits on the node by default");
+
+          style = Object.assign({}, style, { textAnchor: "segment" });
+          engine.applyStyle();
+          assert(track.classList.contains("text-on-segment"), "horizontal segment anchoring");
+
+          style = Object.assign({}, style, { orientation: "vertical", namePos: "left", deltaPos: "right" });
+          engine.applyStyle();
+          assert(!track.classList.contains("text-on-segment"), "vertical tracks ignore it");
+        } finally {
+          track.className = origClass;
+        }
+      });
     });
 
 })();

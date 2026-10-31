@@ -2,7 +2,7 @@
  * src/core/split-engine.js - Splits Parsing, Comparisons & Curves Engine
  * 
  * Handles .lss XML parsing, statistical comparison curve generation (Best, Average, Worst),
- * normalization of comparison names, and timing method detection.
+ * normalization of comparison names, timing method detection and split icon extraction.
  */
 
 (function () {
@@ -144,6 +144,43 @@
    * @param {string} xmlText - Raw XML string
    * @returns {Object|null} Parsed speedrun splits dataset
    */
+  // Image signatures searched for inside an icon: [magic bytes, end marker (inclusive) or null = to the end]
+  const ICON_FORMATS = [
+    { mime: "image/png", start: "\x89PNG\r\n\x1a\n", end: "IEND\xaeB`\x82" },
+    { mime: "image/jpeg", start: "\xff\xd8\xff", end: "\xff\xd9" },
+    { mime: "image/gif", start: "GIF8", end: null }
+  ];
+
+  /**
+   * A split / game icon from a .lss <Icon> as a data URL, or null. LiveSplit stores icons as a
+   * .NET-serialised Bitmap (base64), which wraps the original image file; that file is cut out.
+   * Plain base64 images (no wrapper) work too.
+   * @param {string} base64 - The <Icon> text
+   * @returns {string|null}
+   */
+  function extractIconDataUrl(base64) {
+    const text = String(base64 || "").replace(/\s+/g, "");
+    if (!text) return null;
+    let bytes;
+    try {
+      bytes = atob(text);
+    } catch (e) {
+      return null;
+    }
+    for (const fmt of ICON_FORMATS) {
+      const from = bytes.indexOf(fmt.start);
+      if (from < 0) continue;
+      let to = bytes.length;
+      if (fmt.end) {
+        const endAt = bytes.lastIndexOf(fmt.end);
+        if (endAt < from) continue;
+        to = endAt + fmt.end.length;
+      }
+      return `data:${fmt.mime};base64,${btoa(bytes.slice(from, to))}`;
+    }
+    return null;
+  }
+
   function parseLssXml(xmlText) {
     if (!xmlText) return null;
     const parser = new DOMParser();
@@ -157,6 +194,7 @@
     const timeUtil = window.LiveSplit.Time.timeStringToSeconds;
 
     const splitsList = [];
+    const splitIcons = [];
     const comparisonTimesGT = [];
     const comparisonTimesRT = [];
     const bestSegmentTimesGT = [];
@@ -229,6 +267,7 @@
       });
 
       splitsList.push(name);
+      splitIcons.push(extractIconDataUrl(seg.querySelector("Icon")?.textContent));
       comparisonTimesGT.push(timeUtil(pbGT));
       comparisonTimesRT.push(timeUtil(pbRT));
       bestSegmentTimesGT.push(bestSecGT);
@@ -284,6 +323,7 @@
       game,
       category,
       splitsList,
+      splitIcons,
       comparisonTimesGT,
       comparisonTimesRT,
       bestSegmentTimesGT,
@@ -334,6 +374,7 @@
     sanitizeComparisonTimes,
     computeHistoricalCurves,
     parseLssXml,
+    extractIconDataUrl,
     detectTimingMethodFromSplits,
     detectTimingMethodFromComp
   };

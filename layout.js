@@ -294,6 +294,16 @@
     if (e) e.applyStyle();
   }
 
+  function setTrackView(id) {
+    const e = getTrackStyleEngine();
+    if (e) e.setTrackView(id);
+  }
+
+  function setTrackText(part, visible) {
+    const e = getTrackStyleEngine();
+    if (e) e.setTrackText(part, visible);
+  }
+
   function setVisibleSplits(val) {
     const e = getTrackStyleEngine();
     if (e) e.setVisibleSplits(val);
@@ -733,6 +743,8 @@
     syncTrackModalUI,
     setVisibleSplits,
     setTrackOrientation,
+    setTrackView,
+    setTrackText,
     fitTrackOnScreen,
     setEditMode,
     isEditMode: () => isEditMode,

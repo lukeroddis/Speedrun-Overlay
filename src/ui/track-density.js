@@ -26,14 +26,15 @@
 
     let lastKnownOrientation = null;
 
-    function computeSpacing(isVertical, splitPref, alwaysShowLast, viewportWidth, viewportHeight, splitCount) {
+    // segmentsAreSplits: the track view draws no Start node, so Fit All shares the room among the splits only
+    function computeSpacing(isVertical, splitPref, alwaysShowLast, viewportWidth, viewportHeight, splitCount, segmentsAreSplits = false) {
+      const fitAllCount = Math.max(1, segmentsAreSplits ? splitCount : splitCount + 1);
       if (isVertical) {
         const pTop = 16;
         const pBottom = 24;
         const availH = Math.max(200, viewportHeight - (pTop + pBottom));
         if (splitPref === "all") {
-          const totalCount = Math.max(1, splitCount + 1);
-          return Math.max(38, Math.floor(availH / totalCount));
+          return Math.max(38, Math.floor(availH / fitAllCount));
         } else if (splitPref !== "auto") {
           const num = parseInt(splitPref, 10);
           if (!isNaN(num) && num > 0) {
@@ -55,8 +56,7 @@
 
       if (splitPref === "all") {
         // Fit all splits on screen without scrolling
-        const totalCount = Math.max(1, splitCount + 1); // +1 for the Start node
-        return Math.max(45, Math.floor(availW / totalCount));
+        return Math.max(45, Math.floor(availW / fitAllCount));
       } else if (splitPref !== "auto") {
         const num = parseInt(splitPref, 10);
         if (!isNaN(num) && num > 0) {
@@ -96,6 +96,8 @@
     function shouldAngleNames(track, isVertical, anglePref, spacing) {
       // 40° angle applies strictly to split names in horizontal mode
       if (isVertical) return false;
+      // Nothing to tilt while split names are switched off
+      if (track.classList.contains("hide-split-names")) return false;
       if (anglePref === "angled" || anglePref === "40") return true;
       if (anglePref === "horizontal" || anglePref === "flat") return false;
       // A track made tall enough for wrapped names wraps them instead of tilting them
@@ -167,7 +169,8 @@
       const alwaysShowLast = localStorage.getItem(STORAGE_KEYS.ALWAYS_SHOW_LAST) !== "false";
       const splitCount = getSplitCount();
 
-      const spacing = computeSpacing(isVertical, splitPref, alwaysShowLast, viewportWidth, viewportHeight, splitCount);
+      const segmentsAreSplits = window.LiveSplit.TrackViews.getTrackView(track.dataset.trackView).segmentsAreSplits;
+      const spacing = computeSpacing(isVertical, splitPref, alwaysShowLast, viewportWidth, viewportHeight, splitCount, segmentsAreSplits);
       document.documentElement.style.setProperty("--node-spacing", `${spacing}px`);
 
       syncSplitCountControls(splitPref, isVertical, splitCount);

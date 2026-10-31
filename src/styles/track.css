@@ -185,6 +185,34 @@
   bottom: 4px;
 }
 
+/* Split text toggles (track-style "viewText", per track view): hidden text takes no room,
+   since every layout's spacing is built from the font sizes */
+.track.hide-split-names {
+  --name-font-size: 0px;
+}
+.track.hide-split-names .split-name {
+  display: none;
+}
+.track.hide-split-deltas .split-delta-val,
+.track.hide-split-times .split-time-val {
+  display: none;
+}
+/* Delta and time share one line: it only goes once both are off */
+.track.hide-split-deltas.hide-split-times {
+  --delta-font-size: 0px;
+}
+.track.hide-split-deltas.hide-split-times .split-delta {
+  display: none;
+}
+
+/* Text on segment (track-style "textAnchor"): each split's bar runs from the previous node to its
+   own, centred on the split's left edge, so anchoring the text there centres it along that bar.
+   The start node and the first visible split have no bar of their own and keep it on the node. */
+.track.text-on-segment:not(.vertical) .split-item:not(.origin-node):not(.first-visible-node) .split-name,
+.track.text-on-segment:not(.vertical) .split-item:not(.origin-node):not(.first-visible-node) .split-delta {
+  left: 0;
+}
+
 /* Connector Bar */
 .segment-bar-bg {
   position: absolute;

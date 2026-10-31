@@ -1,0 +1,103 @@
+/* ============================================================
+   MINIMALIST TRACK VIEW (track-style "trackView": "minimalist", src/ui/track-views.js)
+   One flat bar per split, coloured by its result, with small gaps between them. The bar
+   leading into a node stands for that split, so there are no dots or Start node, the first
+   visible split keeps its bar, and any split text is centred along the split's bar.
+   Node centres stay where they are (they are the gaps), so ghost pins and the live fill
+   work unchanged; only the half-spacing before the first bar and after the last is trimmed.
+   ============================================================ */
+.track.view-minimalist {
+  /* No dots: the text and pin math that is built around the dot hugs the bar instead */
+  --dot-size: var(--bar-height, 6px);
+  --segment-gap: 4px;
+}
+
+.track.view-minimalist .dot {
+  display: none;
+}
+
+.track.view-minimalist #node-start {
+  visibility: hidden;
+}
+
+.track.view-minimalist .split-item.first-visible-node .segment-bar-bg {
+  display: block !important;
+}
+
+.track.view-minimalist .segment-bar-bg,
+.track.view-minimalist .segment-bar-fill {
+  border-radius: 2px;
+}
+
+/* Horizontal: the top padding is room for ghost pins, so it goes while none are switched on */
+.track.view-minimalist:not(.vertical):not(.has-pins):not(.angled-text) {
+  padding-top: 12px;
+}
+/* No split text at all: just the bar */
+.track.view-minimalist.hide-split-names.hide-split-deltas.hide-split-times:not(.vertical) {
+  --dot-bottom: calc(4px + var(--pin-lane-bottom));
+}
+.track.view-minimalist.hide-split-names.hide-split-deltas.hide-split-times:not(.vertical) .split-item {
+  height: calc(var(--dot-size) + 8px + var(--pin-lane-top) + var(--pin-lane-bottom) + var(--pin-room-top, 0px));
+}
+
+/* Horizontal: bars run between node centres, trimmed by the gap */
+.track.view-minimalist:not(.vertical) .segment-bar-bg {
+  right: calc(50% + var(--segment-gap) / 2);
+  width: calc(var(--node-spacing) - var(--segment-gap));
+}
+.track.view-minimalist:not(.vertical) #node-start {
+  margin-left: calc(var(--node-spacing) / -2);
+}
+.track.view-minimalist:not(.vertical) .split-item.first-visible-node {
+  margin-left: calc(var(--node-spacing) / 2);
+}
+.track.view-minimalist:not(.vertical) .split-item.final-node {
+  margin-right: calc(var(--node-spacing) / -2);
+}
+/* The last split's box still reaches past its bar: keep it from making the track scroll */
+.track.view-minimalist:not(.vertical) {
+  overflow-x: clip;
+}
+/* The split's left edge is the middle of its bar */
+.track.view-minimalist:not(.vertical) .split-name,
+.track.view-minimalist:not(.vertical) .split-delta {
+  left: 0;
+}
+.track.view-minimalist.angled-text .split-name {
+  left: 4px;
+}
+.track.view-minimalist.angled-text .split-delta {
+  left: 0 !important;
+}
+
+/* Vertical: the same, top to bottom */
+.track.view-minimalist.vertical .segment-bar-bg {
+  bottom: calc(50% + var(--segment-gap) / 2);
+  height: calc(var(--node-spacing) - var(--segment-gap));
+}
+.track.view-minimalist.vertical #node-start {
+  margin-top: calc(var(--node-spacing) / -2);
+}
+.track.view-minimalist.vertical .split-item.first-visible-node {
+  margin-top: calc(var(--node-spacing) / 2);
+}
+.track.view-minimalist.vertical .split-item.final-node {
+  margin-bottom: calc(var(--node-spacing) / -2);
+}
+.track.view-minimalist.vertical {
+  overflow-y: clip;
+}
+/* The split's top edge is the middle of its bar: text either side of the bar moves up to it,
+   and the same-side row layouts (static text) are nudged up by half a split */
+.track.view-minimalist.vertical .split-name,
+.track.view-minimalist.vertical .split-delta {
+  top: 0;
+}
+.track.view-minimalist.vertical.pos-name-right.pos-delta-right .split-name,
+.track.view-minimalist.vertical.pos-name-right.pos-delta-right .split-delta,
+.track.view-minimalist.vertical.pos-name-left.pos-delta-left .split-name,
+.track.view-minimalist.vertical.pos-name-left.pos-delta-left .split-delta {
+  position: relative;
+  top: calc(var(--node-spacing) / -2);
+}

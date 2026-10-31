@@ -297,6 +297,49 @@
       });
     });
 
+    it("trackView and the split text toggles read the track style and set it through the HUD layout", () => {
+      const style = { trackView: "minimalist", viewText: { minimalist: { deltas: true } } };
+      const calls = [];
+      const hudLayout = {
+        getTrackStyle: () => style,
+        setTrackView: (v) => calls.push(["view", v]),
+        setTrackText: (part, v) => calls.push([part, v])
+      };
+      stubWindow({ hudLayout }, () => {
+        const s = R.createSettingsController(makeApp());
+        assertEqual(s.options("trackView"), ["network", "minimalist"]);
+        assertEqual([s.get("trackView"), s.get("splitNames"), s.get("splitDeltas"), s.get("splitTimes")], ["minimalist", false, true, false]);
+        assert(s.set("trackView", "network").ok);
+        assert(!s.set("trackView", "graph").ok, "only listed views");
+        s.set("splitNames", true);
+        s.set("splitDeltas", false);
+        s.set("splitTimes", true);
+      });
+      assertEqual(calls, [["view", "network"], ["names", true], ["deltas", false], ["times", true]]);
+      stubWindow({ hudLayout: undefined }, () => {
+        const s = R.createSettingsController(makeApp());
+        assertEqual([s.get("trackView"), s.get("splitNames")], ["network", true], "defaults without a layout");
+      });
+    });
+
+    it("splitTooltip reads the stored switch and sets it through the overlay", () => {
+      const KEYS = window.LiveSplit.Storage.KEYS;
+      const saved = localStorage.getItem(KEYS.SPLIT_TOOLTIP);
+      try {
+        const app = makeApp();
+        app.setSplitTooltipEnabled = (v) => { app.calls.push(["splitTooltip", v]); localStorage.setItem(KEYS.SPLIT_TOOLTIP, String(v)); };
+        const s = R.createSettingsController(app);
+        localStorage.removeItem(KEYS.SPLIT_TOOLTIP);
+        assertEqual(s.get("splitTooltip"), true, "on by default");
+        s.set("splitTooltip", false);
+        assertEqual(app.calls.pop(), ["splitTooltip", false]);
+        assertEqual(s.get("splitTooltip"), false);
+      } finally {
+        if (saved === null) localStorage.removeItem(KEYS.SPLIT_TOOLTIP);
+        else localStorage.setItem(KEYS.SPLIT_TOOLTIP, saved);
+      }
+    });
+
     it("ghosts are a group of their own (the dock's Ghost Pins section)", () => {
       assertEqual(R.listSettings("dock", "ghosts").map((d) => d.id), ["ghostsOn", "ghosts"]);
     });

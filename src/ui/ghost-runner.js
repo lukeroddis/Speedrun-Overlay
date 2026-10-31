@@ -15,6 +15,7 @@
   "use strict";
 
   const STORAGE_KEYS = window.LiveSplit.Storage.KEYS;
+  const TrackViews = window.LiveSplit.TrackViews;
 
   const escapeHtml = (str) => window.LiveSplit.DOMUtils.escapeHtml(str);
   const formatDeltaSeconds = (sec) => window.LiveSplit.Time.formatDeltaSeconds(sec);
@@ -283,9 +284,16 @@
 
       prevNode = prevItem;
       nextNode = currentItem;
-      const omittedBackstep = isVertical ? 64 : 120;
-      startCoord = (prevItem.classList.contains("is-omitted") ? currentItem[offsetStart] - omittedBackstep : prevItem[offsetStart]) + (prevItem[offsetSize] / 2);
       endCoord = currentItem[offsetStart] + (currentItem[offsetSize] / 2);
+      if (prevItem.classList.contains("is-omitted")) {
+        // First visible split after hidden ones: views whose bars are the splits draw its whole
+        // bar (one item long), the others a fixed backstep into the hidden part
+        const track = currentItem.parentElement;
+        const ownsBar = !!track && TrackViews.getTrackView(track.dataset.trackView).segmentsAreSplits;
+        startCoord = ownsBar ? endCoord - currentItem[offsetSize] : currentItem[offsetStart] - (isVertical ? 64 : 120);
+      } else {
+        startCoord = prevItem[offsetStart] + (prevItem[offsetSize] / 2);
+      }
       return { startCoord, endCoord, prevNode, nextNode };
     }
 

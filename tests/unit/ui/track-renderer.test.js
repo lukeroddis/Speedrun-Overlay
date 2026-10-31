@@ -186,6 +186,22 @@
       });
     });
 
+    describe("Track DOM: LiveSplit.TrackRenderer.buildTrackDom", () => {
+      it("builds the Start node and one item per split, marking only the last as final-node", () => {
+        const host = document.createElement("div");
+        const ghost = document.getElementById("ghost-marker");
+        const ghostParent = ghost && ghost.parentElement;
+        try {
+          window.LiveSplit.TrackRenderer.buildTrackDom(host, ["A", "B", "C"], ["0:10", "", "0:30"], false);
+          const items = [...host.querySelectorAll(".split-item")];
+          assertEqual(items.map((el) => el.id), ["node-start", "item-0", "item-1", "item-2"]);
+          assertEqual(items.map((el) => el.classList.contains("final-node")), [false, false, false, true]);
+        } finally {
+          if (ghost && ghostParent) ghostParent.appendChild(ghost);
+        }
+      });
+    });
+
     describe("Track Window Math: LiveSplit.TrackRenderer.calculateTrackWindow", () => {
       const tr = window.LiveSplit.TrackRenderer;
 

@@ -231,4 +231,33 @@
       });
     });
 
+  describe("Split Engine: split icons", () => {
+    const PNG_BYTES = "\x89PNG\r\n\x1a\n" + "\x00\x00\x00\rIHDRdata" + "\x00\x00\x00\x00IEND\xaeB`\x82";
+
+    it("cuts the image out of LiveSplit's serialised Bitmap, or takes a plain image", () => {
+      const extract = window.LiveSplit.SplitEngine.extractIconDataUrl;
+      const wrapped = btoa("\x00\x01.NET Bitmap header" + PNG_BYTES + "\x0b trailer");
+      assertEqual(extract(wrapped), `data:image/png;base64,${btoa(PNG_BYTES)}`);
+      assertEqual(extract(btoa(PNG_BYTES)), `data:image/png;base64,${btoa(PNG_BYTES)}`);
+      const jpeg = "\xff\xd8\xff\xe0jpegdata\xff\xd9";
+      assertEqual(extract(btoa("hdr" + jpeg + "tail")), `data:image/jpeg;base64,${btoa(jpeg)}`);
+      assertEqual(extract(btoa("no image here")), null);
+      assertEqual(extract("%%% not base64"), null);
+      assertEqual(extract(""), null);
+      assertEqual(extract(undefined), null);
+    });
+
+    it("parseLssXml returns one icon (or null) per split", () => {
+      const name = Object.keys(window.TestFixtures).find((n) => n.startsWith("The Simpsons"));
+      const parsed = window.LiveSplit.SplitEngine.parseLssXml(window.TestFixtures[name]);
+      assertEqual(parsed.splitIcons.length, parsed.splitsList.length);
+      assert(parsed.splitIcons.every((icon) => icon === null || icon.startsWith("data:image/png;base64,iVBORw0KGgo")),
+        "PNG data URLs");
+      assert(parsed.splitIcons.filter(Boolean).length > 40, "the sample's splits carry icons");
+      const noIcons = window.LiveSplit.SplitEngine.parseLssXml(
+        "<Run><Segments><Segment><Name>A</Name><Icon /></Segment></Segments></Run>");
+      assertEqual(noIcons.splitIcons, [null]);
+    });
+  });
+
 })();

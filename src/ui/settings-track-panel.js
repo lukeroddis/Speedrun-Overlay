@@ -5,6 +5,8 @@
  * - Orientation (segmented control + footer badge) and the opposing-side hint
  * - Split name / delta positions (kept on opposite sides while 40° angle mode is active on a
  *   horizontal track; independent on vertical tracks, where names never tilt)
+ * - Split text alignment: on the node, or centred along the bar leading into it (horizontal only;
+ *   hidden for track views whose bars are the splits, which always keep text along them)
  * - Split angle (toolbar select + modal segmented control)
  * - Name / delta font, bar height and dot size sliders
  * - Visible split count (toolbar + modal spin boxes, Fit All / Auto) and "Always Show Last Split"
@@ -87,8 +89,12 @@
       const anglePref = getAnglePref();
 
       syncOrientation(isVert);
+      const anchorRow = document.getElementById("row-text-anchor");
+      const segmentsAreSplits = window.LiveSplit.TrackViews.getTrackView(style.trackView).segmentsAreSplits;
+      if (anchorRow) anchorRow.style.display = (isVert || segmentsAreSplits) ? "none" : "";
       C.syncSegmented("#ctrl-name-pos", style.namePos);
       C.syncSegmented("#ctrl-delta-pos", style.deltaPos);
+      C.syncSegmented("#ctrl-text-anchor", style.textAnchor === "segment" ? "segment" : "node");
       C.syncSegmented("#ctrl-modal-angle", anglePref);
       const angleSelect = document.getElementById("select-split-angle");
       if (angleSelect) angleSelect.value = anglePref;
@@ -129,6 +135,14 @@
         if (isAngledMode()) {
           style.namePos = (style.deltaPos === "top") ? "bottom" : "top";
         }
+        applyTrackStyle();
+        saveTrackStyle();
+      });
+
+      C.bindSegmented("#ctrl-text-anchor", (val) => {
+        const style = getCurrentTrackStyle();
+        if (!style) return;
+        style.textAnchor = val === "segment" ? "segment" : "node";
         applyTrackStyle();
         saveTrackStyle();
       });
