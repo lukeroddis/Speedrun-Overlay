@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="src/styles/track-nodes.css">
   <link rel="stylesheet" href="src/styles/track-angled.css">
   <link rel="stylesheet" href="src/styles/track-vertical.css">
+  <link rel="stylesheet" href="src/styles/track-minimalist.css">
   <link rel="stylesheet" href="src/styles/settings-menu.css">
   <link rel="stylesheet" href="src/styles/settings-profiles.css">
   <link rel="stylesheet" href="src/styles/track-modal.css">
@@ -347,6 +348,10 @@
       <button type="button" class="track-modal-close" data-popover-close title="Close">✕</button>
     </div>
     <div class="widget-popover-body">
+      <!-- Track View (src/ui/track-views.js) and the split text it shows -->
+      <div class="modal-section-title">Track View</div>
+      <div class="sr-rows" data-settings="trackView splitNames splitDeltas splitTimes"></div>
+
       <!-- Track Orientation -->
       <div class="modal-section-title">Track Orientation</div>
       <div class="modal-row">
@@ -673,6 +678,7 @@
   <!-- UI & interaction modules -->
   <script src="src/ui/layout-engine.js"></script>
   <script src="src/ui/layout-drag.js"></script>
+  <script src="src/ui/track-views.js"></script>
   <script src="src/ui/track-renderer.js"></script>
   <script src="src/ui/track-style.js"></script>
   <script src="src/ui/leaderboard-marquee.js"></script>

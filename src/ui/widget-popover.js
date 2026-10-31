@@ -246,7 +246,11 @@
           onReset(el.dataset.widget);
           repositionSoon();
         }));
-        ["input", "change", "click"].forEach((type) => el.addEventListener(type, repositionSoon));
+        ["input", "change", "click"].forEach((type) => el.addEventListener(type, (e) => {
+          // Opening a dropdown is a click on it: re-laying out the popover then can close its list
+          if (type === "click" && e.target && e.target.tagName === "SELECT") return;
+          repositionSoon();
+        }));
       });
       document.addEventListener("pointerdown", (e) => {
         if (!current || !e.target || typeof e.target.closest !== "function") return;

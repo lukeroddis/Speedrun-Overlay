@@ -14,6 +14,7 @@
   "use strict";
 
   const STORAGE_KEYS = window.LiveSplit.Storage.KEYS;
+  const TrackViews = window.LiveSplit.TrackViews;
 
   const TRACK_STYLE_KEY = STORAGE_KEYS.TRACK_STYLE;
   const SPLIT_DENSITY_KEY = STORAGE_KEYS.VISIBLE_SPLITS;
@@ -21,6 +22,8 @@
   // Single source of default track styling (layout.js and layout profiles read it from here)
   const DEFAULT_TRACK_STYLE = Object.freeze({
     orientation: "horizontal", // 'horizontal' | 'vertical'
+    trackView: TrackViews.DEFAULT_TRACK_VIEW, // a TrackViews id: 'network' | 'minimalist'
+    viewText: Object.freeze({}), // per view { names, deltas, times } split text shown (missing: the view's default)
     namePos: "top",        // 'top' | 'bottom' | 'left' | 'right'
     deltaPos: "bottom",    // 'top' | 'bottom' | 'left' | 'right'
     textAnchor: "node",    // 'node' | 'segment' (horizontal: center split text on the bar leading into the node)
@@ -44,7 +47,7 @@
   const WIDGET_STYLE_KEYS = Object.freeze({
     title: Object.freeze(["logoHeight", "bgTitle"]),
     timers: Object.freeze(["bgTimers"]),
-    track: Object.freeze(["orientation", "namePos", "deltaPos", "textAnchor", "nameFontSize", "deltaFontSize", "barHeight",
+    track: Object.freeze(["orientation", "trackView", "viewText", "namePos", "deltaPos", "textAnchor", "nameFontSize", "deltaFontSize", "barHeight",
       "dotSize", "bgTrack"]),
     ghosts: Object.freeze(["ghostPinLength", "ghostPinSize", "pinPos", "pinLane"])
   });
@@ -303,11 +306,36 @@
       track.classList.remove("pins-top", "pins-bottom", "pins-left", "pins-right");
       track.classList.add(`pins-${resolvePinSide(currentTrackStyle)}`);
       track.classList.toggle("pin-lane", currentTrackStyle.pinLane !== false);
-      track.classList.toggle("text-on-segment", !isVert && currentTrackStyle.textAnchor === "segment");
+      // Track view: one view-<id> class; views whose bars are the splits always keep text along them
+      const view = TrackViews.getTrackView(currentTrackStyle.trackView);
+      track.classList.remove(...TrackViews.VIEW_CLASSES);
+      track.classList.add(`view-${view.id}`);
+      track.dataset.trackView = view.id;
+      const text = TrackViews.resolveTrackText(currentTrackStyle);
+      TrackViews.TEXT_PARTS.forEach((part) => track.classList.toggle(`hide-split-${part}`, !text[part]));
+      track.classList.toggle("text-on-segment",
+        !view.segmentsAreSplits && !isVert && currentTrackStyle.textAnchor === "segment");
 
       syncTrackModalUI();
 
       window.LiveSplit.Overlay.refreshTrack?.();
+    }
+
+    function setTrackView(id) {
+      const style = getCurrentStyle();
+      if (!style) return;
+      style.trackView = TrackViews.getTrackView(id).id;
+      applyStyle();
+      saveStyle(style);
+    }
+
+    // part: "names" | "deltas" | "times", remembered for the current view
+    function setTrackText(part, visible) {
+      const style = getCurrentStyle();
+      if (!style) return;
+      style.viewText = TrackViews.withTrackText(style, part, visible);
+      applyStyle();
+      saveStyle(style);
     }
 
     function setVisibleSplits(val) {
@@ -332,6 +360,8 @@
       resetStyle,
       enforceOpposingTrackPositions,
       setOrientation,
+      setTrackView,
+      setTrackText,
       applyStyle,
       setVisibleSplits
     };

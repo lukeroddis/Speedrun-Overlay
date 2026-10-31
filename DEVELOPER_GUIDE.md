@@ -18,7 +18,7 @@
 3. **Modular Vite-Built Architecture**:
    - [index.html](index.html): Clean semantic structure, HUD components, and SVG icons.
    - **`src/styles/` Stylesheets** (linked from `index.html` in cascade order; the Vite build inlines them in the same order):
-     `base.css` (design tokens), `hud-layout.css`, `layout-toolbar.css`, `hud-components.css`, `track.css`, `track-nodes.css`, `track-angled.css`, `track-vertical.css`, `settings-menu.css`, `settings-profiles.css`, `track-modal.css`, `widget-popover.css`, `ghost-markers.css`, `toast.css`, `race-pins.css`, `leaderboard.css`, `leaderboard-animations.css`, `leaderboard-badges.css`, `dev-mode.css`. Link order is part of the cascade: add rules to the file that owns the component, and add new files with a `<link>` placed where their rules should win.
+     `base.css` (design tokens), `hud-layout.css`, `layout-toolbar.css`, `hud-components.css`, `track.css`, `track-nodes.css`, `track-angled.css`, `track-vertical.css`, `track-minimalist.css` (the Minimalist track view), `settings-menu.css`, `settings-profiles.css`, `track-modal.css`, `widget-popover.css`, `ghost-markers.css`, `toast.css`, `race-pins.css`, `leaderboard.css`, `leaderboard-animations.css`, `leaderboard-badges.css`, `dev-mode.css`. Link order is part of the cascade: add rules to the file that owns the component, and add new files with a `<link>` placed where their rules should win.
    - **`src/core/` Core Speedrun & Persistence Modules**:
      - [`storage.js`](src/core/storage.js): `safeStorage` wrapper with in-memory fallback for sandboxed OBS CEF sources, state persistence, and centralized keys.
      - [`time-utils.js`](src/core/time-utils.js): `timeStringToSeconds`, `formatTimerDisplay`, `formatTargetTime`, and `formatDeltaSeconds`.
@@ -44,6 +44,7 @@
    - **`src/ui/` Interface & Layout Modules**:
      - [`layout-engine.js`](src/ui/layout-engine.js): `COMPONENTS`, the HUD component ids in layout order (default coordinates live in `layout.js`, anchor resolution in `timer-anchor.js`).
      - [`layout-drag.js`](src/ui/layout-drag.js): Edit-mode pointer drag, the corner handle (scales components; resizes the track, Ctrl/Shift-drag scales it), track docking and on-screen clamping. The header ✕/👁 button toggles `visible.<id>` through the settings registry. Track size lives in its layout state: `verticalWidth` (vertical track, docked or floating: room for split text), `height` (floating vertical: split spacing via track density), `width` (floating horizontal: split spacing) and `nameLines` (horizontal, docked or floating: 1-4 lines split names wrap onto; above 1 the track gets `wrap-names`, which replaces auto 40° tilting).
+     - [`track-views.js`](src/ui/track-views.js): `TRACK_VIEWS`, the ways the splits can be drawn (Network Track, Minimalist). Every view shares the track DOM, windowing, colours, live fill and pins; track style `trackView` puts a `view-<id>` class on `#track` that the view's stylesheet restyles. Each view sets which split text (names / deltas / times) it shows by default; the user's choices are kept per view in track style `viewText`, applied as `hide-split-names` / `hide-split-deltas` / `hide-split-times` (the delta line collapses once deltas and times are both off). `segmentsAreSplits` views (Minimalist) draw no Start node or dots and keep the first visible split's bar. New view = one entry plus one stylesheet.
      - [`track-renderer.js`](src/ui/track-renderer.js): Track DOM building, sliding window math and class application, schematic breaks, scroll-to-split, visible-split capacity, and zero-allocation 60 FPS element caching.
      - [`track-density.js`](src/ui/track-density.js): `--node-spacing` from visible-splits preference, auto 40° angled split names, split-count controls and density/angle cycle badges.
      - [`track-scroll.js`](src/ui/track-scroll.js): Mouse wheel and arrow-key track scrolling (windowed or native scroll).
@@ -234,6 +235,8 @@ Layout profiles are stored and exported as formatted JSON with the following ext
   },
   "style": {
     "orientation": "horizontal",
+    "trackView": "network",
+    "viewText": { "minimalist": { "names": true, "deltas": false, "times": false } },
     "namePos": "top",
     "deltaPos": "bottom",
     "textAnchor": "node",

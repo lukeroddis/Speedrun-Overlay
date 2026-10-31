@@ -145,6 +145,9 @@
 
       panel.sync(Object.assign({}, style, { orientation: "vertical", namePos: "left", deltaPos: "right" }));
       assertEqual(el("row-text-anchor").style.display, "none");
+
+      panel.sync(Object.assign({}, style, { trackView: "minimalist" }));
+      assertEqual(el("row-text-anchor").style.display, "none", "Minimalist always keeps text along its bars");
     }));
 
     it("vertical positions stay independent even with a saved 40° angle (names never tilt there)", () => withPanel(({ el, panel, style, click, active }) => {

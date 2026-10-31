@@ -42,6 +42,9 @@
     return !!low && !BUILT_IN_COMPARISONS.includes(low) && !low.includes("world record") && low !== "wr" && !GHOST_IDS.includes(low);
   }
 
+  const TrackViews = window.LiveSplit.TrackViews;
+  const trackStyleOf = () => window.hudLayout?.getTrackStyle?.() || null;
+
   const raceClientOf = (app) => (typeof app.getRaceClient === "function" ? app.getRaceClient() : null);
 
   function getLayoutEntry(id) {
@@ -114,6 +117,45 @@
       showIf: { setting: "timerDisplay", equals: "both" },
       get: (app) => app.state.currentTimingMethod,
       set: (app, value) => app.setTimingMethodFocus(value)
+    },
+    {
+      id: "trackView",
+      label: "Track view",
+      group: "track",
+      where: ["dock", "widget"],
+      type: "enum",
+      options: [...TrackViews.TRACK_VIEW_IDS],
+      optionLabels: TrackViews.TRACK_VIEW_LABELS,
+      get: () => TrackViews.getTrackView(trackStyleOf()?.trackView).id,
+      set: (app, value) => window.hudLayout?.setTrackView?.(value)
+    },
+    {
+      id: "splitNames",
+      label: "Split names",
+      group: "track",
+      where: ["dock", "widget"],
+      type: "bool",
+      // Remembered per track view
+      get: () => TrackViews.resolveTrackText(trackStyleOf()).names,
+      set: (app, value) => window.hudLayout?.setTrackText?.("names", value)
+    },
+    {
+      id: "splitDeltas",
+      label: "Split deltas",
+      group: "track",
+      where: ["dock", "widget"],
+      type: "bool",
+      get: () => TrackViews.resolveTrackText(trackStyleOf()).deltas,
+      set: (app, value) => window.hudLayout?.setTrackText?.("deltas", value)
+    },
+    {
+      id: "splitTimes",
+      label: "Split times",
+      group: "track",
+      where: ["dock", "widget"],
+      type: "bool",
+      get: () => TrackViews.resolveTrackText(trackStyleOf()).times,
+      set: (app, value) => window.hudLayout?.setTrackText?.("times", value)
     },
     {
       id: "golds",

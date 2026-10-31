@@ -79,6 +79,7 @@
       <div class="widget-popover" id="wp-test" data-widget="wpt" hidden style="width: 300px; height: 240px;">
         <div class="widget-popover-header" id="wp-header"><span id="wp-title">Title</span><button data-popover-close id="wp-x"></button></div>
         <input id="wp-input">
+        <select id="wp-select"><option value="a">a</option><option value="b">b</option></select>
         <button data-popover-reset id="wp-reset"></button>
       </div>
       <div class="widget-popover" id="wp-anchored" data-widget="wpt-extra" data-anchor="wpt" hidden style="width: 300px; height: 200px;"></div>
@@ -202,6 +203,28 @@
         dom.el("wp-input").dispatchEvent(new Event("input", { bubbles: true }));
         await new Promise((r) => requestAnimationFrame(() => r()));
         assert(dom.el("wp-test").style.left !== before, "followed the widget");
+      } finally {
+        popovers.close();
+        dom.remove();
+      }
+    });
+
+    it("does not re-lay out when a dropdown is clicked open (that can close its list)", async () => {
+      const dom = mountHtml(HTML);
+      const popovers = WP.createWidgetPopovers();
+      popovers.bind();
+      const nextFrame = () => new Promise((r) => requestAnimationFrame(() => r()));
+      try {
+        popovers.open("wpt");
+        const anchor = dom.el("hud-comp-wpt");
+        const before = dom.el("wp-test").style.left;
+        anchor.style.left = "600px";
+        dom.el("wp-select").dispatchEvent(new MouseEvent("click", { bubbles: true }));
+        await nextFrame();
+        assertEqual(dom.el("wp-test").style.left, before, "a click on the dropdown leaves it where it is");
+        dom.el("wp-select").dispatchEvent(new Event("change", { bubbles: true }));
+        await nextFrame();
+        assert(dom.el("wp-test").style.left !== before, "picking an option still repositions");
       } finally {
         popovers.close();
         dom.remove();
