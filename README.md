@@ -147,13 +147,15 @@ If you have more than one overlay browser source (e.g. in different scenes), the
 | **`←` / `→`** (or **`↑` / `↓`**) | Pan splits / browse future and previous splits with keyboard arrow keys (works in continuous and windowed mode with pinned last split) |
 | **`E`** or **`F2`** | Toggle Interactive Layout Edit Mode (Drag & Scale) |
 | **`Esc`** | Close an open settings panel or dialog, else exit Edit Mode |
-| **`Settings`** | Bottom-right discreet pill: drop `.lss` files, **⚙ Title / Timer / Track Settings** (open Layout Mode), **👻 Ghost Pins**, **🏁 Live Race Settings** (race code, standings, race pins), layout profiles |
+| **`Settings`** | Bottom-right discreet pill: drop `.lss` files, **⚙ Title / Timer / Track / Current Split Settings** (open Layout Mode), **👻 Ghost Pins**, **🏁 Live Race Settings** (race code, standings, race pins), layout profiles |
 
 For multi-scene or automated OBS setups, configure sources instantly with query parameters:
 
 | URL Parameter | Description | Example |
 | :--- | :--- | :--- |
 | `?profile=Name` | Load a saved named layout profile | `index.html?profile=Mario+64` |
+| `?view=title\|timers\|track\|currentsplit\|leaderboard` | Show only that widget, for a browser source of its own (your saved layout is left as it is) | `index.html?view=currentsplit` |
+| `?hide=a,b` | Hide these widgets in this source only | `index.html?hide=title,leaderboard` |
 | `?timer=gametime\|realtime\|both` | Set timer visibility mode | `index.html?timer=gametime` |
 | `?orient=horizontal\|vertical` | Set track orientation | `index.html?orient=vertical` |
 | `?splits=all\|auto\|<count>` | Configure visible split density | `index.html?splits=12` |

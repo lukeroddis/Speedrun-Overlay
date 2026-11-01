@@ -11,9 +11,34 @@
 
   const STORAGE_KEYS = window.LiveSplit.Storage.KEYS;
 
+  /**
+   * Pure: which widgets the URL shows or hides, by component id, for only the widgets it names
+   * (?view=<id> shows only that widget, e.g. ?view=currentsplit for a browser source of its own;
+   * ?hide=a,b hides those). Ids match in any case. The layout applies these over the saved
+   * visibility and never saves them, so one OBS source showing a single widget leaves the
+   * others alone.
+   * @param {string} search - location.search
+   * @param {string[]} ids - Component ids (LayoutEngine.COMPONENTS)
+   * @returns {Object<string, boolean>}
+   */
+  function getUrlVisibility(search, ids) {
+    const params = new URLSearchParams(search || "");
+    const idFor = (name) => ids.find((id) => id.toLowerCase() === name);
+    const out = {};
+    const view = params.get("view");
+    const target = view ? idFor(view.toLowerCase().trim()) : null;
+    if (target) ids.forEach((id) => { out[id] = id === target; });
+    const hide = params.get("hide");
+    if (hide) {
+      hide.split(",").map((name) => idFor(name.trim().toLowerCase())).filter(Boolean).forEach((id) => { out[id] = false; });
+    }
+    return out;
+  }
+
+  // Everything but ?view= / ?hide= (getUrlVisibility): profile, splits, angle, timer anchor,
+  // track style, ghosts, logo and edit mode
   function parseUrlParameters(options = {}) {
     const {
-      getLayoutState = () => ({}),
       getCurrentTrackStyle = () => null,
       loadProfileByName = () => {},
       setVisibleSplits = () => {},
@@ -31,34 +56,7 @@
       loadProfileByName(profileParam.trim());
     }
 
-    const view = params.get("view"); // 'title' | 'timers' | 'track' | 'currentsplit' | 'all'
     const edit = params.get("edit"); // '1' | 'true'
-    const hide = params.get("hide"); // 'title,timers'
-
-    const layoutState = getLayoutState();
-
-    // A single-widget view shows only that widget (the standings keep their own visibility)
-    const SOLO_VIEWS = ["title", "timers", "track", "currentSplit"];
-    const idFor = (name) => Object.keys(layoutState || {}).find((id) => id.toLowerCase() === name);
-
-    if (view && layoutState) {
-      const target = idFor(view.toLowerCase().trim());
-      if (SOLO_VIEWS.includes(target) && layoutState.title && layoutState.timers && layoutState.track) {
-        for (const id of SOLO_VIEWS) {
-          if (layoutState[id]) layoutState[id].visible = id === target;
-        }
-      }
-    }
-
-    if (hide && layoutState) {
-      const hideList = hide.split(",").map((s) => s.trim().toLowerCase());
-      for (const name of hideList) {
-        const id = idFor(name);
-        if (id) {
-          layoutState[id].visible = false;
-        }
-      }
-    }
 
     const splitsParam = params.get("splits");
     const angleParam = params.get("angle");
@@ -191,6 +189,7 @@
   // Global namespace export
   window.LiveSplit = window.LiveSplit || {};
   window.LiveSplit.LayoutParams = {
+    getUrlVisibility,
     parseUrlParameters
   };
 })();
