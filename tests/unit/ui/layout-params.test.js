@@ -40,6 +40,27 @@
       assertEqual(mockState.track.visible, true, "track visible when view=track");
     });
 
+    it("?view=currentsplit shows only the Current Split widget, and ?hide= finds it in any case", () => {
+      const mockState = {
+        title: { visible: true },
+        timers: { visible: true },
+        track: { visible: true },
+        currentSplit: { visible: false },
+        leaderboard: { visible: true }
+      };
+      window.LiveSplit.LayoutParams.parseUrlParameters({ getLayoutState: () => mockState, search: "?view=currentsplit" });
+      assertEqual([mockState.title.visible, mockState.timers.visible, mockState.track.visible, mockState.currentSplit.visible],
+        [false, false, false, true]);
+      assertEqual(mockState.leaderboard.visible, true, "the standings keep their own visibility");
+
+      window.LiveSplit.LayoutParams.parseUrlParameters({ getLayoutState: () => mockState, search: "?view=timers" });
+      assertEqual([mockState.timers.visible, mockState.currentSplit.visible], [true, false], "other views hide it");
+
+      mockState.currentSplit.visible = true;
+      window.LiveSplit.LayoutParams.parseUrlParameters({ getLayoutState: () => mockState, search: "?hide=currentSplit" });
+      assertEqual(mockState.currentSplit.visible, false);
+    });
+
     it("parses ?hide= parameter to hide comma-separated components", () => {
       const mockState = {
         title: { visible: true },

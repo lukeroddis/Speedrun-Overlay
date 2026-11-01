@@ -1,0 +1,51 @@
+/* ============================================================
+   SPLIT FLASH GLOW (gold / green / red)
+   The glow a completed split plays, shared by the leaderboard rows (leaderboard-animations.css)
+   and the Current Split widget (src/ui/split-card.js flash()). Classes come from
+   SplitEvaluation.getSplitFlashType. An element sets where the glow fades back to with
+   --split-flash-rest-bg / -border / -shadow, and its length with --split-flash-duration.
+   ============================================================ */
+.split-flash-gold {
+  --split-flash-rgb: 250, 204, 21;
+  --split-flash-solid: #facc15;
+}
+
+.split-flash-green {
+  --split-flash-rgb: 34, 197, 94;
+  --split-flash-solid: #22c55e;
+}
+
+.split-flash-red {
+  --split-flash-rgb: 239, 68, 68;
+  --split-flash-solid: #ef4444;
+}
+
+.split-flash-gold,
+.split-flash-green,
+.split-flash-red {
+  border-color: var(--split-flash-solid);
+  animation: split-flash-pulse var(--split-flash-duration, 4s) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes split-flash-pulse {
+  0% {
+    background: rgba(var(--split-flash-rgb), 0.42);
+    border-color: var(--split-flash-solid);
+    box-shadow: 0 0 22px rgba(var(--split-flash-rgb), 0.85), inset 0 0 12px rgba(var(--split-flash-rgb), 0.30);
+  }
+  30% {
+    background: rgba(var(--split-flash-rgb), 0.27);
+    border-color: rgba(var(--split-flash-rgb), 0.85);
+    box-shadow: 0 0 15px rgba(var(--split-flash-rgb), 0.58), inset 0 0 8px rgba(var(--split-flash-rgb), 0.19);
+  }
+  65% {
+    background: rgba(var(--split-flash-rgb), 0.13);
+    border-color: rgba(var(--split-flash-rgb), 0.42);
+    box-shadow: 0 0 8px rgba(var(--split-flash-rgb), 0.23);
+  }
+  100% {
+    background: var(--split-flash-rest-bg, transparent);
+    border-color: var(--split-flash-rest-border, transparent);
+    box-shadow: var(--split-flash-rest-shadow, none);
+  }
+}

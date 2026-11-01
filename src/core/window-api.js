@@ -69,6 +69,7 @@
       getLockedDeltas: () => state.lockedDeltas,
       getCurrentIndex: () => state.currentIndex,
       getLastElapsedSec: () => state.lastElapsedSec,
+      getRunBaseline: () => state.runBaseline,
       updateTrackStatus: app.updateTrackStatus,
       updateTrackWindow: app.updateTrackWindow,
       shiftTrackWindow: app.shiftTrackWindow,

@@ -209,6 +209,8 @@
     // Timer just started a fresh run: ensure any prior DNF is cleared and the race starts cleanly
     async function handleRunStarted() {
       resetRunProgress({ isReset: false });
+      // Before this run's golds or PB land: the Current Split widget compares against these
+      state.runBaseline = window.LiveSplit.RunSummary.captureRunBaseline(state);
 
       const rcStart = app.getRaceClient();
       if (rcStart) {
@@ -458,6 +460,7 @@
         app.updateLiveSegmentProgress(currentTotalSec);
         app.updateGhostRunner(currentTotalSec);
       }
+      app.updateCurrentSplit();
     }
 
     async function pollLoop() {

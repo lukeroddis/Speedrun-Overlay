@@ -9,7 +9,7 @@
   "use strict";
 
   // HUD component ids, in layout order (layout.js and profiles read this list)
-  const COMPONENTS = Object.freeze(["title", "timers", "track", "leaderboard"]);
+  const COMPONENTS = Object.freeze(["title", "timers", "track", "currentSplit", "leaderboard"]);
 
   // Export to namespace
   window.LiveSplit = window.LiveSplit || {};

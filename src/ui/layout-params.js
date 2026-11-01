@@ -31,33 +31,30 @@
       loadProfileByName(profileParam.trim());
     }
 
-    const view = params.get("view"); // 'title' | 'timers' | 'track' | 'all'
+    const view = params.get("view"); // 'title' | 'timers' | 'track' | 'currentsplit' | 'all'
     const edit = params.get("edit"); // '1' | 'true'
     const hide = params.get("hide"); // 'title,timers'
 
     const layoutState = getLayoutState();
 
+    // A single-widget view shows only that widget (the standings keep their own visibility)
+    const SOLO_VIEWS = ["title", "timers", "track", "currentSplit"];
+    const idFor = (name) => Object.keys(layoutState || {}).find((id) => id.toLowerCase() === name);
+
     if (view && layoutState) {
-      const lower = view.toLowerCase().trim();
-      if (lower === "title" && layoutState.title && layoutState.timers && layoutState.track) {
-        layoutState.title.visible = true;
-        layoutState.timers.visible = false;
-        layoutState.track.visible = false;
-      } else if (lower === "timers" && layoutState.title && layoutState.timers && layoutState.track) {
-        layoutState.title.visible = false;
-        layoutState.timers.visible = true;
-        layoutState.track.visible = false;
-      } else if (lower === "track" && layoutState.title && layoutState.timers && layoutState.track) {
-        layoutState.title.visible = false;
-        layoutState.timers.visible = false;
-        layoutState.track.visible = true;
+      const target = idFor(view.toLowerCase().trim());
+      if (SOLO_VIEWS.includes(target) && layoutState.title && layoutState.timers && layoutState.track) {
+        for (const id of SOLO_VIEWS) {
+          if (layoutState[id]) layoutState[id].visible = id === target;
+        }
       }
     }
 
     if (hide && layoutState) {
       const hideList = hide.split(",").map((s) => s.trim().toLowerCase());
-      for (const id of hideList) {
-        if (layoutState[id]) {
+      for (const name of hideList) {
+        const id = idFor(name);
+        if (id) {
           layoutState[id].visible = false;
         }
       }

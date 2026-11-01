@@ -8,7 +8,8 @@
  *   upcoming (expected segment and split time against the active comparison) or skipped
  * - segment durations: this run, PB, best (gold), average and World Record (only when the
  *   splits carry a real World Record comparison), plus the possible time save vs the gold
- * Times use the active timing method.
+ * - liveFrom: the cumulative time the current split's segment started at (null otherwise)
+ * Times use the active timing method. Also feeds the Current Split widget (src/ui/current-split.js).
  */
 
 (function () {
@@ -60,8 +61,9 @@
     const prevSplit = index === 0 ? 0 : completed[index - 1];
     const runSegment = status === "done" && isTime(completed[index]) && (index === 0 || isTime(prevSplit))
       ? completed[index] - prevSplit : null;
-    const liveSegment = status === "current" && isTime(s.lastElapsedSec) && (index === 0 || isTime(prevSplit))
-      ? Math.max(0, s.lastElapsedSec - prevSplit) : null;
+    // Where the current segment started, so a live display can tick it from the run time alone
+    const liveFrom = status === "current" && (index === 0 || isTime(prevSplit)) ? (index === 0 ? 0 : prevSplit) : null;
+    const liveSegment = liveFrom !== null && isTime(s.lastElapsedSec) ? Math.max(0, s.lastElapsedSec - liveFrom) : null;
 
     const pbSegment = segmentFromCurve(pbCurve, index);
     const bestSegment = isTime(golds[index]) ? golds[index] : null;
@@ -89,6 +91,7 @@
       // Against the active comparison: the segment to aim for, and where the split lands
       expectedSegment: notYet ? segmentFromCurve(s.comparisonTimes, index) : null,
       expectedTime: notYet && isTime(expected) ? expected : null,
+      liveFrom,
       segments,
       possibleSave: save !== null && save >= 0.05 ? save : null
     };

@@ -62,6 +62,7 @@ Traditional LiveSplit layouts consume substantial vertical screen space over mod
 * **Readable at any density**: split names tilt to 40° as the track fills up.
 * **Two track views**: the **Network Track** (nodes joined by bars) or **Minimalist** (one coloured bar per split, nothing else). Split names, deltas and times can be switched on or off for each view.
 * **Split info on hover**: hover any split (in a browser, or in OBS through the browser source's *Interact* window) for its icon, delta or expected segment time, and its segment times this run, in your PB, your gold, on average and in the World Record (when your splits have a World Record comparison), plus the time you could still save on it.
+* **Current Split widget** (switch it on in Layout Mode or the OBS dock; `?view=currentsplit` for a browser source of its own): the same card for the split you are running, its segment ticking live and turning red once you are over. Pick which rows it shows (this run, PB, best, average, WR, possible save). A finished split stays up for a few seconds (adjustable, or off) with the leaderboard's gold / gained / lost glow. After the last split it shows a **run summary**: final time and delta, New PB, golds and the time they saved, your best and worst segment against PB, splits ahead, a delta graph of the run and the gaps to Sum of Best and the World Record, all against your times from before the run. It stays up through LiveSplit's reset (where you choose whether to save) until the next run starts.
 
 ### 2. Ghost Runners
 
@@ -202,7 +203,6 @@ For WebSocket architecture details, LiveSplit protocol constraints, algorithm sp
 ## 🔮 Future Roadmap & Proposals
 
 For post-v2.0.0 feature specifications and technical explorations, see:
-* **Current split overlay**: Show segment time, personal best, world record etc
 * **Minimalist graph overlay**: Visual representation of deltas over time
 * **Racer tile improvements**: Hover over for context menu with runner information
 * **Add partial support for racetime.gg**: Allow for tracking of racetime.gg races, though full split telemetry still requires therun.gg player profiles

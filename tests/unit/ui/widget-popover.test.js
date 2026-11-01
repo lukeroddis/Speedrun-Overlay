@@ -219,9 +219,10 @@
         const anchor = dom.el("hud-comp-wpt");
         const before = dom.el("wp-test").style.left;
         anchor.style.left = "600px";
+        dom.el("wp-select").dispatchEvent(new PointerEvent("pointerup", { bubbles: true }));
         dom.el("wp-select").dispatchEvent(new MouseEvent("click", { bubbles: true }));
         await nextFrame();
-        assertEqual(dom.el("wp-test").style.left, before, "a click on the dropdown leaves it where it is");
+        assertEqual(dom.el("wp-test").style.left, before, "pressing and releasing on the dropdown leaves it where it is");
         dom.el("wp-select").dispatchEvent(new Event("change", { bubbles: true }));
         await nextFrame();
         assert(dom.el("wp-test").style.left !== before, "picking an option still repositions");

@@ -1,7 +1,7 @@
 /**
  * layout.js - Interactive HUD Component Layout & Positioning Engine
  * Supports drag & drop positioning, proportional scaling, visibility toggling,
- * persistence via localStorage, and standalone OBS URL views (?view=title|timers|track).
+ * persistence via localStorage, and standalone OBS URL views (?view=title|timers|track|currentsplit).
  */
 
 (function () {
@@ -70,6 +70,14 @@
         scale: 1.0,
         visible: true,
         docked: "bottom"
+      },
+      // Off until switched on, so saved layouts from before it look the same
+      currentSplit: {
+        x: Math.max(42, w - 340),
+        y: 130,
+        scale: 1.0,
+        visible: false,
+        docked: "none"
       },
       leaderboard: {
         x: 42,
