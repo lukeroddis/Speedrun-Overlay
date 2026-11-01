@@ -61,7 +61,7 @@
         assert(!ids.has(def.id), `duplicate id ${def.id}`);
         ids.add(def.id);
         assert(def.label && def.group, `${def.id} label / group`);
-        assert(["bool", "enum", "splits", "ghosts", "range", "action"].includes(def.type), `${def.id} type`);
+        assert(["bool", "enum", "splits", "ghosts", "multi", "range", "action"].includes(def.type), `${def.id} type`);
         assert(def.where.length > 0 && def.where.every((w) => w === "dock" || w === "widget"), `${def.id} where`);
         if (def.type === "action") {
           assert(typeof def.run === "function" && Array.isArray(def.options), `${def.id} run / options`);
@@ -337,6 +337,36 @@
       } finally {
         if (saved === null) localStorage.removeItem(KEYS.SPLIT_TOOLTIP);
         else localStorage.setItem(KEYS.SPLIT_TOOLTIP, saved);
+      }
+    });
+
+    it("Current Split hold and after-run: stored values, validated, set through the overlay", () => {
+      const KEYS = window.LiveSplit.Storage.KEYS;
+      const keys = [KEYS.CURRENT_SPLIT_HOLD, KEYS.CURRENT_SPLIT_AFTER_RUN, KEYS.CURRENT_SPLIT_ROWS];
+      const saved = keys.map((k) => localStorage.getItem(k));
+      try {
+        keys.forEach((k) => localStorage.removeItem(k));
+        const app = makeApp();
+        app.setCurrentSplitHold = (v) => app.calls.push(["hold", v]);
+        app.setCurrentSplitAfterRun = (v) => app.calls.push(["afterRun", v]);
+        app.setCurrentSplitRows = (v) => app.calls.push(["rows", v]);
+        const s = R.createSettingsController(app);
+        assertEqual(R.listSettings("dock", "currentSplit").map((d) => d.id), ["currentSplitHold", "currentSplitAfterRun", "currentSplitRows"]);
+        assertEqual([s.get("currentSplitHold"), s.get("currentSplitAfterRun")], [3, "summary"]);
+        assertEqual(s.get("currentSplitRows"), ["run", "pb", "best", "average", "wr", "save"], "every row by default");
+        s.set("currentSplitRows", "wr, pb, wr");
+        assertEqual(app.calls.pop(), ["rows", ["wr", "pb"]], "a list, without repeats");
+        assertEqual(s.set("currentSplitRows", ["gold"]).ok, false, "only the card's rows");
+        s.set("currentSplitRows", []);
+        assertEqual(app.calls.pop(), ["rows", []], "none is allowed");
+        s.set("currentSplitHold", 42);
+        assertEqual(app.calls.pop(), ["hold", 10], "clamped to the range");
+        s.set("currentSplitAfterRun", "lastSplit");
+        assertEqual(app.calls.pop(), ["afterRun", "lastSplit"]);
+        assertEqual(s.set("currentSplitAfterRun", "confetti").ok, false);
+        assert(R.getSettingDef("visible.currentSplit"), "and a visibility switch");
+      } finally {
+        keys.forEach((k, i) => (saved[i] === null ? localStorage.removeItem(k) : localStorage.setItem(k, saved[i])));
       }
     });
 

@@ -231,16 +231,25 @@
         const lb = window.LiveSplit.Leaderboard;
         const compEl = document.getElementById("hud-comp-leaderboard");
         const origGetState = window.hudLayout?.getState;
+        const origIsShown = window.hudLayout?.isComponentShown;
         window.hudLayout = window.hudLayout || {};
-        window.hudLayout.getState = () => ({ leaderboard: { visible: false } });
+        try {
+          // Saved visibility, as layouts without isComponentShown report it
+          delete window.hudLayout.isComponentShown;
+          window.hudLayout.getState = () => ({ leaderboard: { visible: false } });
+          lb.renderLeaderboard([{ userId: "p1", username: "P1", rank: 1, position: 1 }], true, false, false);
+          assert(compEl.classList.contains("is-hidden"), "Leaderboard is hidden when layout sets visible to false");
 
-        lb.renderLeaderboard([{ userId: "p1", username: "P1", rank: 1, position: 1 }], true, false, false);
-        assert(compEl.classList.contains("is-hidden"), "Leaderboard is hidden when layout sets visible to false");
-
-        if (origGetState) {
-          window.hudLayout.getState = origGetState;
-        } else {
-          delete window.hudLayout.getState;
+          // Shown on this page (a ?hide= override included)
+          window.hudLayout.getState = () => ({ leaderboard: { visible: true } });
+          window.hudLayout.isComponentShown = (id) => id !== "leaderboard";
+          lb.renderLeaderboard([{ userId: "p1", username: "P1", rank: 1, position: 1 }], true, false, false);
+          assert(compEl.classList.contains("is-hidden"), "hidden when the layout says it is not shown on this page");
+        } finally {
+          if (origGetState) window.hudLayout.getState = origGetState;
+          else delete window.hudLayout.getState;
+          if (origIsShown) window.hudLayout.isComponentShown = origIsShown;
+          else delete window.hudLayout.isComponentShown;
         }
       });
     });

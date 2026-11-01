@@ -1,7 +1,7 @@
 /**
  * layout.js - Interactive HUD Component Layout & Positioning Engine
  * Supports drag & drop positioning, proportional scaling, visibility toggling,
- * persistence via localStorage, and standalone OBS URL views (?view=title|timers|track).
+ * persistence via localStorage, and standalone OBS URL views (?view=<widget>, ?hide=<widgets>; never saved).
  */
 
 (function () {
@@ -70,6 +70,14 @@
         scale: 1.0,
         visible: true,
         docked: "bottom"
+      },
+      // Off until switched on, so saved layouts from before it look the same
+      currentSplit: {
+        x: Math.max(42, w - 340),
+        y: 130,
+        scale: 1.0,
+        visible: false,
+        docked: "none"
       },
       leaderboard: {
         x: 42,
@@ -443,8 +451,8 @@
     const w = window.innerWidth || 1920;
     const h = window.innerHeight || 1080;
 
-    // Visibility
-    if (state.visible === false) {
+    // Visibility (a ?view= / ?hide= override wins; the toolbar and header buttons show the saved setting)
+    if (!isShown(compId, state)) {
       if (isEditMode) {
         el.classList.add("edit-hidden");
         el.classList.remove("is-hidden");
@@ -657,10 +665,13 @@
     applyAllLayouts();
   }
 
+  // ?view= / ?hide=: widgets this page shows or hides over the saved layout (never saved)
+  let urlVisibility = {};
+  const isShown = (compId, state) => (compId in urlVisibility ? urlVisibility[compId] : state.visible !== false);
+
   function parseUrlParameters() {
     if (typeof window !== "undefined" && window.LiveSplit && window.LiveSplit.LayoutParams) {
       window.LiveSplit.LayoutParams.parseUrlParameters({
-        getLayoutState: () => layoutState,
         getCurrentTrackStyle: () => currentTrackStyle,
         loadProfileByName,
         setVisibleSplits,
@@ -669,7 +680,8 @@
         applyGameLogo,
         removeGameLogo
       });
-      return;
+      // Track style parameters change the style after it was applied
+      applyTrackStyle();
     }
   }
 
@@ -705,6 +717,8 @@
 
   // Initialize layout engine
   window.addEventListener("DOMContentLoaded", () => {
+    // Before the first layout, so the hidden widgets never show
+    urlVisibility = window.LiveSplit.LayoutParams?.getUrlVisibility(window.location.search, COMPONENTS) || {};
     const activeProf = getActiveProfileName();
     const activeData = (activeProf && activeProf !== "Default") ? getProfileData(activeProf) : null;
     if (activeData) {
@@ -728,6 +742,8 @@
   // Export layout helpers globally if needed
   window.hudLayout = {
     getState: () => layoutState || (layoutState = loadSavedLayout()),
+    // Shown on this page: the saved visibility, or a ?view= / ?hide= override
+    isComponentShown: (compId) => isShown(compId, (layoutState || (layoutState = loadSavedLayout()))[compId] || {}),
     getTrackStyle: () => {
       if (!currentTrackStyle) currentTrackStyle = loadSavedTrackStyle();
       return currentTrackStyle;

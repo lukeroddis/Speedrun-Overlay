@@ -27,6 +27,10 @@
     ALWAYS_SHOW_LAST: "livesplit_always_show_last_split",
     SPLIT_ANGLE: "livesplit_split_angle",
     SPLIT_TOOLTIP: "livesplit_split_tooltip",
+    // Current Split widget: seconds a finished split stays up, and what follows a finished run
+    CURRENT_SPLIT_HOLD: "livesplit_current_split_hold",
+    CURRENT_SPLIT_AFTER_RUN: "livesplit_current_split_after_run",
+    CURRENT_SPLIT_ROWS: "livesplit_current_split_rows",
 
     // Ghosts & race
     GHOST_COMPARISON: "livesplit_ghost_comparison",

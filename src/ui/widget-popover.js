@@ -186,6 +186,9 @@
       return open(compId);
     }
 
+    // Opening a dropdown is a press and release on it: re-laying out the popover then closes its list
+    const onSelect = (e) => !!(e && e.target && e.target.tagName === "SELECT");
+
     // Drags from the header move the popover, drags from the corner grip resize it
     function bindMoveAndResize(el) {
       const header = el.querySelector(".widget-popover-header");
@@ -247,8 +250,7 @@
           repositionSoon();
         }));
         ["input", "change", "click"].forEach((type) => el.addEventListener(type, (e) => {
-          // Opening a dropdown is a click on it: re-laying out the popover then can close its list
-          if (type === "click" && e.target && e.target.tagName === "SELECT") return;
+          if (type === "click" && onSelect(e)) return;
           repositionSoon();
         }));
       });
@@ -258,7 +260,9 @@
         if (current.el.contains(e.target) || e.target.closest(".hud-component, .quick-settings-wrap")) return;
         close();
       }, true);
-      document.addEventListener("pointerup", repositionSoon);
+      document.addEventListener("pointerup", (e) => {
+        if (!onSelect(e)) repositionSoon();
+      });
       window.addEventListener("resize", repositionSoon);
     }
 

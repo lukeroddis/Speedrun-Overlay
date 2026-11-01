@@ -15,7 +15,7 @@
  *
  * Types: "bool", "enum" (options: array or (app) => array), "splits"
  * ("auto" | "all" | "2".."60"), "ghosts" (array of ghost ids or comparison
- * names, [] = off), "range" (a whole number; options are the consecutive
+ * names, [] = off), "multi" (any of its options, as a list; [] = none), "range" (a whole number; options are the consecutive
  * allowed values, so a dock renders a slider from first to last, and values
  * outside are clamped), "action" (run(app, value) with value one of options; no
  * stored value, so no get / set and not in snapshots).
@@ -34,7 +34,9 @@
   const GHOST_IDS = Object.freeze(["wr", "pb", "best", "average", "worst"]);
   // Comparisons the built-in ghosts already cover (by name); the rest work as custom ghosts
   const BUILT_IN_COMPARISONS = ["personal best", "best segments", "average segments", "worst segments"];
-  const COMPONENT_LABELS = { title: "Show title", timers: "Show timers", track: "Show track", leaderboard: "Show standings" };
+  const COMPONENT_LABELS = {
+    title: "Show title", timers: "Show timers", track: "Show track", currentSplit: "Show current split", leaderboard: "Show standings"
+  };
 
   /** Pure: whether a splits comparison is offered as a ghost of its own (not PB / Best / Avg / Worst / WR). */
   function isCustomGhostComparison(name) {
@@ -62,6 +64,7 @@
     set: (app, value) => {
       window.hudLayout?.setComponentVisible?.(compId, value);
       if (compId === "leaderboard") app.refreshLeaderboard?.();
+      if (compId === "currentSplit") app.refreshCurrentSplit?.();
     }
   }));
 
@@ -230,6 +233,41 @@
       set: (app, value) => app.setTrackScrollPosition(value)
     },
     {
+      id: "currentSplitHold",
+      label: "Hold finished split (s)",
+      group: "currentSplit",
+      where: ["dock", "widget"],
+      type: "range",
+      // Seconds a completed split stays up with its glow before the next one (0 = straight on)
+      options: [...window.LiveSplit.CurrentSplit.HOLD_SECONDS],
+      get: () => window.LiveSplit.CurrentSplit.getHoldSeconds(),
+      set: (app, value) => app.setCurrentSplitHold(value)
+    },
+    {
+      id: "currentSplitAfterRun",
+      label: "After the run",
+      group: "currentSplit",
+      where: ["dock", "widget"],
+      type: "enum",
+      options: [...window.LiveSplit.CurrentSplit.AFTER_RUN_OPTIONS],
+      // Short labels: two buttons rather than a dropdown (native dropdowns are unreliable in OBS)
+      optionLabels: { summary: "Summary", lastSplit: "Last split" },
+      get: () => window.LiveSplit.CurrentSplit.getAfterRun(),
+      set: (app, value) => app.setCurrentSplitAfterRun(value)
+    },
+    {
+      id: "currentSplitRows",
+      label: "Rows shown",
+      group: "currentSplit",
+      where: ["dock", "widget"],
+      type: "multi",
+      // The card's segment rows and possible save (the track's hover card always shows them all)
+      options: [...window.LiveSplit.CurrentSplit.ROW_OPTIONS],
+      optionLabels: { run: "This run", pb: "PB", best: "Best", average: "Avg", wr: "WR", save: "Save" },
+      get: () => window.LiveSplit.CurrentSplit.getRows(),
+      set: (app, value) => app.setCurrentSplitRows(value)
+    },
+    {
       id: "racePins",
       label: "Race pins",
       group: "leaderboard",
@@ -299,14 +337,15 @@
         if (opts.length === 0) return { ok: false, error: "no range" };
         return { ok: true, value: Math.max(opts[0], Math.min(opts[opts.length - 1], num)) };
       }
-      case "ghosts": {
+      case "ghosts":
+      case "multi": {
         const list = Array.isArray(raw) ? raw : (typeof raw === "string" ? raw.split(",") : null);
-        if (!list) return { ok: false, error: "expected a list of ghosts" };
+        if (!list) return { ok: false, error: "expected a list" };
         const ids = [];
         for (const item of list) {
           const id = typeof item === "string" ? item.trim() : "";
           if (!id || id === "off") continue;
-          if (!resolveOptions(def, app).includes(id)) return { ok: false, error: `unknown ghost ${id}` };
+          if (!resolveOptions(def, app).includes(id)) return { ok: false, error: `unknown option ${id}` };
           if (!ids.includes(id)) ids.push(id);
         }
         return { ok: true, value: ids };

@@ -79,7 +79,7 @@ def test_storage_keys_come_from_storage_js():
 @pytest.mark.parametrize("label, pattern, owner", [
     ("default track style", r"DEFAULT_TRACK_STYLE\s*=\s*(?:Object\.freeze\()?\{", "src/ui/track-style.js"),
     ("default comparison names", r'\[\s*"Personal Best",\s*"Best Segments",\s*"Average Segments",\s*"Worst Segments"\s*\]', "src/core/split-engine.js"),
-    ("HUD component ids", r'\[\s*"title",\s*"timers",\s*"track",\s*"leaderboard"\s*\]', "src/ui/layout-engine.js"),
+    ("HUD component ids", r'\[\s*"title",\s*"timers",\s*"track",\s*"currentSplit",\s*"leaderboard"\s*\]', "src/ui/layout-engine.js"),
     ("LiveSplit Server URL", r'"ws://localhost:16834/livesplit"', "src/core/livesplit-client.js"),
 ])
 def test_shared_constant_has_one_owner(label, pattern, owner):

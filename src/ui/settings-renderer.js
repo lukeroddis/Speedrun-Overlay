@@ -5,7 +5,7 @@
  * (SettingsRegistry.describeSettings), so the OBS dock and the overlay's settings
  * dialogs render a setting the same way:
  * - bool: On / Off button; enum: segmented buttons (a few short options) or a
- *   dropdown; splits: - / number / + / Auto / All; ghosts: multi-select buttons;
+ *   dropdown; splits: - / number / + / Auto / All; ghosts / multi: multi-select buttons;
  *   range: slider (rate-limited while dragging); action: one button per option
  * - The mouse wheel steps a slider, or runs a back / forward action
  * - A schema entry's `showIf` { setting, equals } hides its row while that setting differs
@@ -65,6 +65,9 @@
           options.map((opt) => el("option", { value: opt, textContent: optionLabel(def, opt) })));
         updaters.push((values) => { if (document.activeElement !== select) select.value = values[def.id]; });
         return el("div", { className: "sr-control" }, [select]);
+      },
+      multi(def, options) {
+        return CONTROLS.ghosts(def, options);
       },
       ghosts(def, options) {
         const btns = options.map((opt) => el("button", {

@@ -64,6 +64,7 @@
    * @property {number} previousDeltaSeconds - Delta at the last coloured split (live gaining / losing)
    * @property {number} lastElapsedSec - Latest run time from LiveSplit
    * @property {HostSplitFlash|null} pendingHostSplitFlash
+   * @property {Object|null} runBaseline - RunBaseline (src/core/run-summary.js): PB curves and golds copied at run start (RunSummary.captureRunBaseline); kept after a reset so a finished run's summary still compares against them
    * @property {number} trackManualScrollOffset - User scroll offset of the track window
    * @property {number} trackWindowStart - First split shown by the sliding track window (0 when not windowed)
    * @property {boolean} canQueryComparison - False once getcomparisonname gets no reply (older servers); stops asking
@@ -104,6 +105,7 @@
       previousDeltaSeconds: 0,
       lastElapsedSec: 0,
       pendingHostSplitFlash: null,
+      runBaseline: null,
 
       // UI / protocol flags
       trackManualScrollOffset: 0,

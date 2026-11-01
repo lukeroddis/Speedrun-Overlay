@@ -140,6 +140,7 @@
       // Update sliding window & discontinuity after status classes are updated
       const isWindowed = updateTrackWindow(idx);
       window.LiveSplit.TrackRenderer.scrollTrackToIndex(idx, isWindowed, isVertical);
+      app.updateCurrentSplit();
     }
 
     /**

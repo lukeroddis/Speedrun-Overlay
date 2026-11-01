@@ -71,6 +71,15 @@
         assertEqual(log.set, [["ghosts", ["wr", "pb"]], ["ghosts", []]]);
       }, { ghosts: ["wr"] }));
 
+    it("multi: the same toggle buttons over any options", () => withRow({ id: "currentSplitRows", label: "Rows", type: "multi", optionLabels: { pb: "PB" } },
+      ["run", "pb"], ({ all, log }) => {
+        const [run, pb] = all("button");
+        assert(run.classList.contains("sr-on") && !pb.classList.contains("sr-on"));
+        assertEqual(pb.textContent, "PB");
+        pb.click();
+        assertEqual(log.set, [["currentSplitRows", ["run", "pb"]]]);
+      }, { currentSplitRows: ["run"] }));
+
     it("splits: - / number / + / Auto / All", () => withRow({ id: "visibleSplits", label: "Splits", type: "splits", min: 2, max: 60 },
       [], ({ q, all, log, renderer }) => {
         const num = q(".sr-num");

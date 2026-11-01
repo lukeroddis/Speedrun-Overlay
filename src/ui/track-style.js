@@ -40,6 +40,7 @@
     bgTitle: true,         // boolean
     bgTimers: true,        // boolean
     bgTrack: true,         // boolean
+    bgCurrentSplit: true,  // boolean
     logoHeight: 60         // px (25 to 140)
   });
 
@@ -47,6 +48,7 @@
   const WIDGET_STYLE_KEYS = Object.freeze({
     title: Object.freeze(["logoHeight", "bgTitle"]),
     timers: Object.freeze(["bgTimers"]),
+    currentSplit: Object.freeze(["bgCurrentSplit"]),
     track: Object.freeze(["orientation", "trackView", "viewText", "namePos", "deltaPos", "textAnchor", "nameFontSize", "deltaFontSize", "barHeight",
       "dotSize", "bgTrack"]),
     ghosts: Object.freeze(["ghostPinLength", "ghostPinSize", "pinPos", "pinLane"])
@@ -294,6 +296,8 @@
       if (elTitle) elTitle.classList.toggle("has-bg", isBgActive && currentTrackStyle.bgTitle !== false);
       if (elTimers) elTimers.classList.toggle("has-bg", isBgActive && currentTrackStyle.bgTimers !== false);
       if (elTrackComp) elTrackComp.classList.toggle("has-bg", isBgActive && currentTrackStyle.bgTrack !== false);
+      const elCurrentSplit = document.getElementById("hud-comp-currentSplit");
+      if (elCurrentSplit) elCurrentSplit.classList.toggle("has-bg", isBgActive && currentTrackStyle.bgCurrentSplit !== false);
       const elLeaderboard = document.getElementById("hud-comp-leaderboard");
       if (elLeaderboard) elLeaderboard.classList.toggle("has-bg", isBgActive);
 

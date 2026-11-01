@@ -83,7 +83,18 @@ Traditional LiveSplit layouts consume substantial vertical screen space over mod
 * Live positions with animated overtakes, gap to leader, current split, pace vs. expected, fastest-segment ribbons (🥇🥈🥉), DNF/finished states, and a pre-race countdown/lobby view.
 * **Racers as track pins**: every competitor appears on your progress track alongside your ghosts. Toggle all pins with **Pins: ON/OFF**, or **double-click a racer** in the standings to hide or show just their pin.
 
-### 4. Layout Editor & Game Profiles
+### 4. Current Split Card
+
+<p align="center">
+  <img src="assets/currentsplit.gif" alt="Current Split Animation" width="300">
+</p>
+
+* A card for the split you're on: its segment ticks live against your PB, gold, average and WR, and turns red once you're over.
+* Each finished split stays up for a moment with a **gold / gained / lost glow** before the next card appears.
+* After the run, a **run summary**: final time, New PB, golds and time saved, best and worst segments, and a delta graph of the run. It stays up through LiveSplit's reset until your next run starts.
+* Choose which rows it shows and how long splits stay up, or show it on its own with `?view=currentsplit`.
+
+### 5. Layout Editor & Game Profiles
 
 <p align="center">
   <img src="assets/tracksettings.png" alt="Track Settings" width="450">
@@ -95,7 +106,7 @@ Traditional LiveSplit layouts consume substantial vertical screen space over mod
 * **Per-game profiles** load automatically when LiveSplit connects or a `.lss` file is dropped.
 * **Import/export** as JSON ([schema/layout-v1.json](schema/layout-v1.json)), or copy/paste via the clipboard inside OBS.
 
-### 5. Dual Timers & Game Logo
+### 6. Dual Timers & Game Logo
 
 <p align="center">
   <img src="assets/GameTimer.gif" alt="Dynamic Game & Real Timers" width="600">
@@ -105,7 +116,7 @@ Traditional LiveSplit layouts consume substantial vertical screen space over mod
 * Upload a PNG, SVG or WebP **game logo** in place of the title text.
 * **Frosted-glass plates** with adjustable blur and opacity keep text readable over bright games.
 
-### 6. OBS Dock
+### 7. OBS Dock
 
 <p align="center">
   <img src="assets/DockSettings.png" alt="Dynamic Game & Real Timers" width="300">
@@ -119,7 +130,8 @@ An optional OBS panel (a Custom Browser Dock) for changing key settings mid-stre
 4. The dock shows **Overlay linked** within a couple of seconds, then its Race, Profile, Run, Track, Ghost Pins and Visibility sections. *Overlay not found* almost always means the browser source still has *Local file* ticked.
 
 If your source still has *Local file* ticked, **export your layout first** (Settings → Export (.json)), switch to the URL, then re-import it: the switch changes where OBS stores the overlay's saved data.
-     * *Why a URL instead of Local file?* The overlay works the same either way, but only a `file:///` URL lets the OBS Dock talk to it. Switching later moves where OBS keeps the overlay's saved layouts, so it is easiest to start this way.
+     
+* *Why a URL instead of Local file?* The overlay works the same either way, but only a `file:///` URL lets the OBS Dock talk to it. Switching later moves where OBS keeps the overlay's saved layouts, so it is easiest to start this way.
 
 If you have more than one overlay browser source (e.g. in different scenes), the dock controls all of them.
 
@@ -135,13 +147,15 @@ If you have more than one overlay browser source (e.g. in different scenes), the
 | **`←` / `→`** (or **`↑` / `↓`**) | Pan splits / browse future and previous splits with keyboard arrow keys (works in continuous and windowed mode with pinned last split) |
 | **`E`** or **`F2`** | Toggle Interactive Layout Edit Mode (Drag & Scale) |
 | **`Esc`** | Close an open settings panel or dialog, else exit Edit Mode |
-| **`Settings`** | Bottom-right discreet pill: drop `.lss` files, **⚙ Title / Timer / Track Settings** (open Layout Mode), **👻 Ghost Pins**, **🏁 Live Race Settings** (race code, standings, race pins), layout profiles |
+| **`Settings`** | Bottom-right discreet pill: drop `.lss` files, **⚙ Title / Timer / Track / Current Split Settings** (open Layout Mode), **👻 Ghost Pins**, **🏁 Live Race Settings** (race code, standings, race pins), layout profiles |
 
 For multi-scene or automated OBS setups, configure sources instantly with query parameters:
 
 | URL Parameter | Description | Example |
 | :--- | :--- | :--- |
 | `?profile=Name` | Load a saved named layout profile | `index.html?profile=Mario+64` |
+| `?view=title\|timers\|track\|currentsplit\|leaderboard` | Show only that widget, for a browser source of its own (your saved layout is left as it is) | `index.html?view=currentsplit` |
+| `?hide=a,b` | Hide these widgets in this source only | `index.html?hide=title,leaderboard` |
 | `?timer=gametime\|realtime\|both` | Set timer visibility mode | `index.html?timer=gametime` |
 | `?orient=horizontal\|vertical` | Set track orientation | `index.html?orient=vertical` |
 | `?splits=all\|auto\|<count>` | Configure visible split density | `index.html?splits=12` |
@@ -151,7 +165,7 @@ For multi-scene or automated OBS setups, configure sources instantly with query 
 
 ---
 
-## 🧑‍💻 Development
+## 🛠️ Development
 
 Building from source requires Node.js `^20.19.0` or `>=22.12.0`; the test suite also requires Python 3.11.
 
@@ -163,6 +177,10 @@ npm run build    # → dist/index.html (single self-contained file)
 ```
 
 The application source remains classic, dependency-free scripts. `vite.config.mjs` swaps the script tags for a generated module entry (built from the same `index.html` script list) during a build, and `vite-plugin-singlefile` inlines the resulting JS and CSS. The `postbuild` check ([scripts/verify-single-file.mjs](scripts/verify-single-file.mjs)) fails the build if `dist/` contains anything other than `index.html` or if the output references an external asset. The source [index.html](index.html) can still be opened directly for quick debugging, but the supported distribution is the built single file.
+
+For WebSocket architecture details, LiveSplit protocol constraints, algorithm specifications, and layout schema definitions, refer to:
+
+👉 **[Developer Guide (DEVELOPER_GUIDE.md)](DEVELOPER_GUIDE.md)**
 
 ---
 
@@ -191,18 +209,9 @@ npm run build
 
 ---
 
-## 🛠️ Developer Guide
-
-For WebSocket architecture details, LiveSplit protocol constraints, algorithm specifications, and layout schema definitions, refer to:
-
-👉 **[Developer Guide (DEVELOPER_GUIDE.md)](DEVELOPER_GUIDE.md)**
-
----
-
 ## 🔮 Future Roadmap & Proposals
 
 For post-v2.0.0 feature specifications and technical explorations, see:
-* **Current split overlay**: Show segment time, personal best, world record etc
 * **Minimalist graph overlay**: Visual representation of deltas over time
 * **Racer tile improvements**: Hover over for context menu with runner information
 * **Add partial support for racetime.gg**: Allow for tracking of racetime.gg races, though full split telemetry still requires therun.gg player profiles

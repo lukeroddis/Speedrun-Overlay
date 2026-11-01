@@ -141,6 +141,9 @@
   }
 
   function isLayoutComponentVisible() {
+    if (window.hudLayout && typeof window.hudLayout.isComponentShown === "function") {
+      return window.hudLayout.isComponentShown("leaderboard");
+    }
     if (window.hudLayout && typeof window.hudLayout.getState === "function") {
       const state = window.hudLayout.getState();
       if (state && state.leaderboard && state.leaderboard.visible === false) return false;

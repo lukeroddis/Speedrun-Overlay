@@ -15,7 +15,8 @@
   const COMPONENT_TOGGLES = [
     { id: "cb-bg-title", prop: "bgTitle" },
     { id: "cb-bg-timers", prop: "bgTimers" },
-    { id: "cb-bg-track", prop: "bgTrack" }
+    { id: "cb-bg-track", prop: "bgTrack" },
+    { id: "cb-bg-currentSplit", prop: "bgCurrentSplit" }
   ];
 
   /**

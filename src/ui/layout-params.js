@@ -11,9 +11,34 @@
 
   const STORAGE_KEYS = window.LiveSplit.Storage.KEYS;
 
+  /**
+   * Pure: which widgets the URL shows or hides, by component id, for only the widgets it names
+   * (?view=<id> shows only that widget, e.g. ?view=currentsplit for a browser source of its own;
+   * ?hide=a,b hides those). Ids match in any case. The layout applies these over the saved
+   * visibility and never saves them, so one OBS source showing a single widget leaves the
+   * others alone.
+   * @param {string} search - location.search
+   * @param {string[]} ids - Component ids (LayoutEngine.COMPONENTS)
+   * @returns {Object<string, boolean>}
+   */
+  function getUrlVisibility(search, ids) {
+    const params = new URLSearchParams(search || "");
+    const idFor = (name) => ids.find((id) => id.toLowerCase() === name);
+    const out = {};
+    const view = params.get("view");
+    const target = view ? idFor(view.toLowerCase().trim()) : null;
+    if (target) ids.forEach((id) => { out[id] = id === target; });
+    const hide = params.get("hide");
+    if (hide) {
+      hide.split(",").map((name) => idFor(name.trim().toLowerCase())).filter(Boolean).forEach((id) => { out[id] = false; });
+    }
+    return out;
+  }
+
+  // Everything but ?view= / ?hide= (getUrlVisibility): profile, splits, angle, timer anchor,
+  // track style, ghosts, logo and edit mode
   function parseUrlParameters(options = {}) {
     const {
-      getLayoutState = () => ({}),
       getCurrentTrackStyle = () => null,
       loadProfileByName = () => {},
       setVisibleSplits = () => {},
@@ -31,37 +56,7 @@
       loadProfileByName(profileParam.trim());
     }
 
-    const view = params.get("view"); // 'title' | 'timers' | 'track' | 'all'
     const edit = params.get("edit"); // '1' | 'true'
-    const hide = params.get("hide"); // 'title,timers'
-
-    const layoutState = getLayoutState();
-
-    if (view && layoutState) {
-      const lower = view.toLowerCase().trim();
-      if (lower === "title" && layoutState.title && layoutState.timers && layoutState.track) {
-        layoutState.title.visible = true;
-        layoutState.timers.visible = false;
-        layoutState.track.visible = false;
-      } else if (lower === "timers" && layoutState.title && layoutState.timers && layoutState.track) {
-        layoutState.title.visible = false;
-        layoutState.timers.visible = true;
-        layoutState.track.visible = false;
-      } else if (lower === "track" && layoutState.title && layoutState.timers && layoutState.track) {
-        layoutState.title.visible = false;
-        layoutState.timers.visible = false;
-        layoutState.track.visible = true;
-      }
-    }
-
-    if (hide && layoutState) {
-      const hideList = hide.split(",").map((s) => s.trim().toLowerCase());
-      for (const id of hideList) {
-        if (layoutState[id]) {
-          layoutState[id].visible = false;
-        }
-      }
-    }
 
     const splitsParam = params.get("splits");
     const angleParam = params.get("angle");
@@ -194,6 +189,7 @@
   // Global namespace export
   window.LiveSplit = window.LiveSplit || {};
   window.LiveSplit.LayoutParams = {
+    getUrlVisibility,
     parseUrlParameters
   };
 })();

@@ -25,6 +25,9 @@
       fake.reset();
       window.clearInRunState();
       window.updateTrackStatus(-1);
+      const settings = window.LiveSplit.Overlay.settings;
+      const wasCurrentSplitShown = settings.get("visible.currentSplit");
+      settings.set("visible.currentSplit", true);
 
       fake.acceptConnection();
       await waitFor(() => document.getElementById("connection-status")?.innerText === "CONNECTED", "status pill CONNECTED");
@@ -35,6 +38,9 @@
       fake.state.splitIndex = 0;
       await waitFor(() => window.getCurrentIndex() === 0, "run start (index 0)");
       assert(item(0).classList.contains("current"), "split 0 is current");
+      assert(window.getRunBaseline() && window.getRunBaseline().splitsCount > 0, "PB and golds copied at the start");
+      const card = document.getElementById("current-split-card");
+      await waitFor(() => card.textContent.includes("Split 1 / "), "Current Split card follows split 0");
       await waitFor(() => document.getElementById("timer-igt").innerText === "5.00", "game time mirrored to HUD");
 
       // Split 0 completes at 25s against a 30s target (and a 30s best segment by default)
@@ -48,6 +54,8 @@
       assert(locked.stateClass !== "uncoloured", `split 0 is coloured (got ${locked.stateClass})`);
       assert(locked.deltaInfo.isAhead, "split 0 delta is ahead");
       assert(item(0).classList.contains("completed"), "split 0 marked completed");
+      assert(window.LiveSplit.SplitCard.FLASH_CLASSES.some((c) => card.classList.contains(c)), "the card glows for the split");
+      assert(card.textContent.includes("Split 1 / "), "and holds the split just finished");
       assert(fake.sent.includes("getlastsplittime") && fake.sent.includes("getdelta"), "transition queries sent once per split");
 
       // Reset
@@ -62,6 +70,7 @@
 
       fake.dropConnection();
       await waitFor(() => document.getElementById("connection-status")?.innerText === "DISCONNECTED", "status pill DISCONNECTED");
+      settings.set("visible.currentSplit", wasCurrentSplitShown);
     });
   });
 })();

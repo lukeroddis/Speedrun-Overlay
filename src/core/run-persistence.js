@@ -30,6 +30,7 @@
           lastSplitRecordedSec: state.lastSplitRecordedSec,
           previousDeltaSeconds: state.previousDeltaSeconds,
           lastElapsedSec: state.lastElapsedSec,
+          runBaseline: state.runBaseline,
           splitsCount: state.splitsList.length,
           game: localStorage.getItem(STORAGE_KEYS.GAME_NAME) || "",
           category: localStorage.getItem(STORAGE_KEYS.CATEGORY_NAME) || ""
@@ -79,6 +80,7 @@
           state.completedSplitTimesGT = parsed.completedSplitTimesGT || {};
           state.lastSplitRecordedSec = Number(parsed.lastSplitRecordedSec) || 0;
           state.previousDeltaSeconds = Number(parsed.previousDeltaSeconds) || 0;
+          state.runBaseline = parsed.runBaseline && typeof parsed.runBaseline === "object" ? parsed.runBaseline : null;
           if (typeof parsed.lastElapsedSec === "number") {
             state.lastElapsedSec = parsed.lastElapsedSec;
             if (state.lastElapsedSec > 0) {

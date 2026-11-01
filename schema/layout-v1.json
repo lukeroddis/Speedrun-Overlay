@@ -67,6 +67,17 @@
             "docked": { "type": "string", "enum": ["none", "bottom", "top", "left", "right"] }
           }
         },
+        "currentSplit": {
+          "type": "object",
+          "description": "Current Split widget (hidden in profiles saved before it existed)",
+          "properties": {
+            "x": { "type": "number" },
+            "y": { "type": "number" },
+            "scale": { "type": "number" },
+            "visible": { "type": "boolean" },
+            "docked": { "type": "string" }
+          }
+        },
         "leaderboard": {
           "type": "object",
           "properties": {

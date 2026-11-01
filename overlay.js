@@ -15,6 +15,7 @@
  *   src/ui/timing-controls.js         timer display mode & gold toggle
  *   src/ui/hud-titles.js              game / category titles
  *   src/ui/hud-bindings.js            badge, hotkey and control bindings
+ *   src/ui/current-split.js           Current Split widget (shared split card)
  *   src/core/settings-registry.js     live settings by id (app.settings)
  *   src/core/window-api.js            window.* API for layout.js and tests
  *
@@ -182,6 +183,13 @@ const splitTooltip = window.LiveSplit.SplitTooltip.createSplitTooltip({
   getState: () => state
 });
 
+// Current Split widget (src/ui/current-split.js): follows the run every poll
+const currentSplit = window.LiveSplit.CurrentSplit.createCurrentSplitWidget({
+  el: document.getElementById("current-split-card"),
+  root: document.getElementById("hud-comp-currentSplit"),
+  getState: () => state
+});
+
 function setupTrackScrollInteractions() {
   window.LiveSplit.TrackScroll.setupTrackScrollInteractions({
     isTrackWindowed: app.isTrackWindowed,
@@ -275,6 +283,11 @@ Object.assign(app, {
   updateTrackDensityAndAngle,
   setupTrackScrollInteractions,
   setSplitTooltipEnabled: splitTooltip.setEnabled,
+  updateCurrentSplit: currentSplit.update,
+  refreshCurrentSplit: currentSplit.refresh,
+  setCurrentSplitHold: currentSplit.setHoldSeconds,
+  setCurrentSplitAfterRun: currentSplit.setAfterRun,
+  setCurrentSplitRows: currentSplit.setRows,
   resetSettingsMenuPosition: window.LiveSplit.SettingsMenu.resetSettingsMenuPosition,
   toggleSettingsMenu: window.LiveSplit.SettingsMenu.toggleSettingsMenu,
   isDevModeActive: window.LiveSplit.DevMode.isDevModeActive,

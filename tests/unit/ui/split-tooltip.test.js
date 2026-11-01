@@ -1,8 +1,8 @@
 /**
  * tests/unit/ui/split-tooltip.test.js
- * LiveSplit.SplitTooltip: the card markup (escaped), which split a pointer is over in
- * Network and Minimalist views, and the controller (shows on hover, hides when leaving,
- * in Layout Mode and while switched off).
+ * LiveSplit.SplitTooltip: which split a pointer is over in Network and Minimalist views, and
+ * the controller (shows on hover, ticks the current split's live segment, hides when leaving,
+ * in Layout Mode and while switched off). The card itself: split-card.test.js.
  */
 
 (function () {
@@ -11,12 +11,6 @@
   const { mountHtml } = window.TestUtils;
   const T = window.LiveSplit.SplitTooltip;
   const KEYS = window.LiveSplit.Storage.KEYS;
-
-  const INFO = {
-    index: 1, name: "<b>Boss</b>", icon: null, position: "2 / 3", status: "done",
-    delta: "-1.2", stateClass: "ahead-gaining", splitTime: 83.4,
-    expectedSegment: null, expectedTime: null, segments: [{ id: "pb", label: "PB", seconds: 61.2 }], possibleSave: 1.5
-  };
 
   // Three 100px split items in a row (no layout styles: sized inline)
   const TRACK_HTML = `
@@ -38,21 +32,6 @@
   }
 
   describe("Split Tooltip (LiveSplit.SplitTooltip)", () => {
-    it("renders the card with escaped text, the delta colour and segment rows", () => {
-      const html = T.renderSplitInfoHtml(INFO);
-      assert(html.includes("&lt;b&gt;Boss&lt;/b&gt;") && !html.includes("<b>Boss"), "names are escaped");
-      assert(html.includes("delta-ahead-gaining") && html.includes("-1.2") && html.includes("1:23.4"));
-      assert(html.includes("PB") && html.includes("1:01.2") && html.includes("Possible save"));
-      assert(!html.includes("<img"), "no icon element without an icon");
-      assert(T.renderSplitInfoHtml(Object.assign({}, INFO, { icon: "data:image/png;base64,AA" })).includes("<img"));
-      const upcoming = T.renderSplitInfoHtml(Object.assign({}, INFO, { status: "upcoming", expectedSegment: 12.5, expectedTime: 90, segments: [], possibleSave: null }));
-      assert(upcoming.includes("Expected") && upcoming.includes("12.5") && upcoming.includes("at 1:30.0"), "segment first, then where it lands");
-      assert(!upcoming.includes("Personal Best") && !upcoming.includes("Segment"));
-      const noSegment = T.renderSplitInfoHtml(Object.assign({}, INFO, { status: "upcoming", expectedSegment: null, expectedTime: 90, segments: [], possibleSave: null }));
-      assert(noSegment.includes("at 1:30.0"), "the split time alone when the segment is unknown");
-      assertEqual(T.renderSplitInfoHtml(null), "");
-    });
-
     it("splitIndexAt: the item under the pointer, or the next visible bar's split in Minimalist", () => {
       const dom = mountHtml(TRACK_HTML);
       try {

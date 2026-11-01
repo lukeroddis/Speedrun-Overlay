@@ -20,7 +20,10 @@
   <link rel="stylesheet" href="src/styles/ghost-markers.css">
   <link rel="stylesheet" href="src/styles/toast.css">
   <link rel="stylesheet" href="src/styles/race-pins.css">
+  <link rel="stylesheet" href="src/styles/split-flash.css">
+  <link rel="stylesheet" href="src/styles/split-card.css">
   <link rel="stylesheet" href="src/styles/split-tooltip.css">
+  <link rel="stylesheet" href="src/styles/current-split.css">
   <link rel="stylesheet" href="src/styles/leaderboard.css">
   <link rel="stylesheet" href="src/styles/leaderboard-animations.css">
   <link rel="stylesheet" href="src/styles/leaderboard-badges.css">
@@ -37,6 +40,7 @@
       <label><input type="checkbox" id="cb-toggle-title" checked> Title</label>
       <label><input type="checkbox" id="cb-toggle-timers" checked> Timers</label>
       <label><input type="checkbox" id="cb-toggle-track" checked> Track</label>
+      <label><input type="checkbox" id="cb-toggle-currentSplit"> Current Split</label>
       <label><input type="checkbox" id="cb-toggle-leaderboard" checked> Standings</label>
     </div>
     <div class="toolbar-spinbox-group" title="Exact number of splits visible on screen (or Fit All)">
@@ -107,6 +111,20 @@
         <span class="timer-label">Game Time</span>
       </div>
     </div>
+    <div class="hud-resize-handle" title="Drag horizontally to scale">⤡</div>
+  </div>
+
+  <!-- HUD Component: Current Split card (src/ui/current-split.js) -->
+  <div id="hud-comp-currentSplit" class="hud-component is-hidden" data-component-id="currentSplit">
+    <div class="hud-component-header">
+      <span class="hud-drag-handle">::: Current Split</span>
+      <div class="hud-comp-controls">
+        <span class="hud-scale-badge" id="badge-scale-currentSplit">100%</span>
+        <button type="button" class="hud-btn-icon hud-btn-cog" data-action="open-settings" title="Widget settings" aria-label="Widget settings">⚙</button>
+        <button type="button" class="hud-btn-icon hud-btn-visibility" data-action="toggle-visibility" title="Hide widget" aria-label="Hide widget">✕</button>
+      </div>
+    </div>
+    <div class="current-split-card" id="current-split-card" aria-live="off"></div>
     <div class="hud-resize-handle" title="Drag horizontally to scale">⤡</div>
   </div>
 
@@ -222,9 +240,10 @@
           <button type="button" class="settings-action-btn action-bar-style" id="btn-open-title-settings" data-open-widget-popover="title" title="Open Layout Mode with the title and logo settings">📝 Title Settings</button>
           <button type="button" class="settings-action-btn action-bar-style" id="btn-open-timer-settings" data-open-widget-popover="timers" title="Open Layout Mode with the timer and comparison settings">⏱️ Timer Settings</button>
           <button type="button" class="settings-action-btn action-bar-style" id="track-style-badge" data-open-widget-popover="track" title="Open Layout Mode with the track settings">🏃 Track Settings</button>
-          <button type="button" class="settings-action-btn action-bar-style" id="btn-open-ghost-settings" data-open-popover="ghosts" title="Ghosts to race against and the pin style">👻 Ghost Pins</button>
+          <button type="button" class="settings-action-btn action-bar-style" id="btn-open-current-split-settings" data-open-widget-popover="currentSplit" title="Open Layout Mode with the Current Split widget settings">🎯 Current Split</button>
         </div>
         <div class="settings-actions-row" style="margin-top: 6px;">
+          <button type="button" class="settings-action-btn action-bar-style" id="btn-open-ghost-settings" data-open-popover="ghosts" title="Ghosts to race against and the pin style">👻 Ghost Pins</button>
           <button type="button" class="settings-action-btn action-race" id="btn-open-race-settings" data-open-popover="leaderboard" title="Race code, standings and race pins for therun.gg races">🏁 Live Race Settings</button>
           <button type="button" class="settings-action-btn action-edit-layout" id="layout-edit-btn" title="Enter Edit Mode to move/resize components (Hotkey: E); every widget has a ⚙ there">⚙ Edit Layout Mode</button>
         </div>
@@ -338,6 +357,35 @@
     </div>
     <div class="widget-popover-footer">
       <button type="button" class="toolbar-btn" data-popover-reset title="Reset the logo height and plate (keeps the logo)">↺ Reset Title</button>
+      <button type="button" class="toolbar-btn btn-primary" data-popover-close>Done</button>
+    </div>
+  </div>
+
+  <!-- Current Split widget settings popover, opened by the Layout Mode cog on the widget (src/ui/widget-popover.js) -->
+  <div class="widget-popover" id="widget-popover-currentSplit" data-widget="currentSplit" role="dialog" aria-label="Current split settings" hidden>
+    <div class="widget-popover-header" title="Drag to move; double-click to put it back beside the widget">
+      <h3>🎯 Current Split Settings</h3>
+      <button type="button" class="track-modal-close" data-popover-close title="Close">✕</button>
+    </div>
+    <div class="widget-popover-body">
+      <div class="modal-section-title">Splits &amp; Finish</div>
+      <div class="sr-rows" data-settings="currentSplitHold currentSplitAfterRun"></div>
+      <span style="font-size: 11px; color: #94a3b8; line-height: 1.4;">A finished split stays up for the hold time with its gold / gained / lost glow. After the last split the card shows the run summary or the last split, and stays up through LiveSplit's reset until the next run starts.</span>
+
+      <div class="modal-section-title">Card Rows</div>
+      <div class="sr-rows" data-settings="currentSplitRows"></div>
+
+      <div class="modal-section-title">Background Plate</div>
+      <div class="modal-row">
+        <label style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
+          <span>Show Background Plate</span>
+          <input type="checkbox" id="cb-bg-currentSplit" checked style="width: 16px; height: 16px; accent-color: #38bdf8; cursor: pointer;">
+        </label>
+        <span style="font-size: 11px; color: #94a3b8; line-height: 1.4;">Opacity and blur are shared by all plates: set them with the Plates sliders in the Layout Mode toolbar.</span>
+      </div>
+    </div>
+    <div class="widget-popover-footer">
+      <button type="button" class="toolbar-btn" data-popover-reset title="Reset the plate">↺ Reset</button>
       <button type="button" class="toolbar-btn btn-primary" data-popover-close>Done</button>
     </div>
   </div>
@@ -654,6 +702,7 @@
   <script src="src/core/split-engine.js"></script>
   <script src="src/core/split-evaluation.js"></script>
   <script src="src/core/split-info.js"></script>
+  <script src="src/core/run-summary.js"></script>
   <script src="src/core/overlay-state.js"></script>
   <script src="src/core/ghost-math.js"></script>
   <script src="src/core/livesplit-client.js"></script>
@@ -710,7 +759,9 @@
   <script src="src/ui/track-density.js"></script>
   <script src="src/ui/track-scroll.js"></script>
   <script src="src/ui/ghost-runner.js"></script>
+  <script src="src/ui/split-card.js"></script>
   <script src="src/ui/split-tooltip.js"></script>
+  <script src="src/ui/current-split.js"></script>
   <script src="src/ui/race-controls.js"></script>
   <script src="src/ui/dock-bridge.js"></script>
   <script src="src/ui/ws-log-panel.js"></script>

@@ -12,49 +12,29 @@
       assertEqual(typeof window.LiveSplit.LayoutParams.parseUrlParameters, "function", "parseUrlParameters is a function");
     });
 
-    it("parses ?view= parameter to isolate specific HUD components", () => {
-      const mockState = {
-        title: { visible: true },
-        timers: { visible: true },
-        track: { visible: true }
-      };
-
-      // ?view=timers
-      window.LiveSplit.LayoutParams.parseUrlParameters({
-        getLayoutState: () => mockState,
-        search: "?view=timers"
-      });
-
-      assertEqual(mockState.title.visible, false, "title hidden when view=timers");
-      assertEqual(mockState.timers.visible, true, "timers visible when view=timers");
-      assertEqual(mockState.track.visible, false, "track hidden when view=timers");
-
-      // ?view=track
-      window.LiveSplit.LayoutParams.parseUrlParameters({
-        getLayoutState: () => mockState,
-        search: "?view=track"
-      });
-
-      assertEqual(mockState.title.visible, false, "title hidden when view=track");
-      assertEqual(mockState.timers.visible, false, "timers hidden when view=track");
-      assertEqual(mockState.track.visible, true, "track visible when view=track");
+    it("getUrlVisibility: ?view= shows only the named widget, in any case", () => {
+      const ids = window.LiveSplit.LayoutEngine.COMPONENTS;
+      const vis = (search) => window.LiveSplit.LayoutParams.getUrlVisibility(search, ids);
+      const only = (shown) => Object.fromEntries(ids.map((id) => [id, id === shown]));
+      assertEqual(vis("?view=timers"), only("timers"));
+      assertEqual(vis("?view=currentsplit"), only("currentSplit"));
+      assertEqual(vis("?view=Leaderboard"), only("leaderboard"));
+      assertEqual(vis("?view=all"), {}, "not a widget: nothing overridden");
+      assertEqual(vis(""), {});
     });
 
-    it("parses ?hide= parameter to hide comma-separated components", () => {
-      const mockState = {
-        title: { visible: true },
-        timers: { visible: true },
-        track: { visible: true }
-      };
+    it("getUrlVisibility: ?hide= hides comma-separated widgets in any case, and wins over ?view=", () => {
+      const ids = window.LiveSplit.LayoutEngine.COMPONENTS;
+      const vis = (search) => window.LiveSplit.LayoutParams.getUrlVisibility(search, ids);
+      assertEqual(vis("?hide=timers,Track,nope"), { timers: false, track: false });
+      assertEqual(vis("?hide=currentSplit,leaderboard"), { currentSplit: false, leaderboard: false });
+      assertEqual(vis("?view=timers&hide=timers").timers, false);
+    });
 
-      window.LiveSplit.LayoutParams.parseUrlParameters({
-        getLayoutState: () => mockState,
-        search: "?hide=timers,track"
-      });
-
-      assertEqual(mockState.title.visible, true, "title remains visible");
-      assertEqual(mockState.timers.visible, false, "timers hidden by hide parameter");
-      assertEqual(mockState.track.visible, false, "track hidden by hide parameter");
+    it("parseUrlParameters leaves visibility to getUrlVisibility (nothing written to the saved layout)", () => {
+      const mockState = { title: { visible: true }, timers: { visible: true }, track: { visible: true } };
+      window.LiveSplit.LayoutParams.parseUrlParameters({ getLayoutState: () => mockState, search: "?view=timers&hide=title" });
+      assertEqual([mockState.title.visible, mockState.timers.visible, mockState.track.visible], [true, true, true]);
     });
 
     it("parses track orientation and opposing split positions", () => {
