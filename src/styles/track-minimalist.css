@@ -29,16 +29,10 @@
   border-radius: 2px;
 }
 
-/* Horizontal: the top padding is room for ghost pins, so it goes while none are switched on */
-.track.view-minimalist:not(.vertical):not(.has-pins):not(.angled-text) {
-  padding-top: 12px;
-}
 /* No split text at all: just the bar */
 .track.view-minimalist.hide-split-names.hide-split-deltas.hide-split-times:not(.vertical) {
   --dot-bottom: calc(4px + var(--pin-lane-bottom));
-}
-.track.view-minimalist.hide-split-names.hide-split-deltas.hide-split-times:not(.vertical) .split-item {
-  height: calc(var(--dot-size) + 8px + var(--pin-lane-top) + var(--pin-lane-bottom) + var(--pin-room-top, 0px));
+  --item-h: calc(var(--dot-size) + 8px + var(--pin-lane-top) + var(--pin-lane-bottom));
 }
 
 /* Horizontal: bars run between node centres, trimmed by the gap */

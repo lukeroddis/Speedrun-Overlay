@@ -3,15 +3,20 @@
    Enforces Opposing Side rule:
    - Split names rotate 40°
    - Timers & Deltas remain strictly horizontal on opposite side
-   - Expanded bounding box padding ensures zero truncation
+   - Room for the tilted names fits the longest one: --angled-rise, set by
+     track-density.js (the fallbacks are for a ~160px name)
    ============================================================ */
 
-/* 1. General Angled Track Base: Generous clearance */
+/* 1. General Angled Track Base: the delta text keeps its own small margin */
 .track.angled-text {
-  --track-padding-bottom: 18px;
-  padding-top: 36px;
-  padding-bottom: var(--track-padding-bottom, 18px);
-  min-height: 215px;
+  --track-padding-bottom: 0px;
+}
+
+/* Long names are cut with an ellipsis (--angled-name-max, set with --angled-rise) */
+.track.angled-text .split-name {
+  max-width: var(--angled-name-max, 160px);
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Deltas are NEVER rotated when angled text mode is active */
@@ -28,11 +33,7 @@
 .track.angled-text.pos-name-top,
 .track.angled-text:not(.pos-name-bottom) {
   --dot-bottom: calc(var(--delta-font-size, 15px) + 16px + var(--pin-lane-bottom));
-}
-
-.track.angled-text.pos-name-top .split-item,
-.track.angled-text:not(.pos-name-bottom) .split-item {
-  height: calc(var(--dot-bottom) + var(--dot-size, 15px) + 120px + var(--pin-lane-top));
+  --item-h: calc(var(--dot-bottom) + var(--dot-size, 15px) + 6px + var(--pin-lane-top) + var(--angled-rise, 114px));
 }
 
 .track.angled-text.pos-name-top .dot,
@@ -69,15 +70,8 @@
    High dot baseline prevents any downward angle clipping!
    ------------------------------------------------------------ */
 .track.angled-text.pos-name-bottom {
-  --dot-bottom: calc(var(--name-font-size, 17px) + 115px + var(--pin-lane-bottom));
-  --track-padding-bottom: 30px;
-  padding-top: 20px;
-  padding-bottom: var(--track-padding-bottom, 30px);
-  min-height: 235px;
-}
-
-.track.angled-text.pos-name-bottom .split-item {
-  height: calc(var(--dot-bottom) + var(--dot-size, 15px) + var(--delta-font-size, 15px) + 24px + var(--pin-lane-top));
+  --dot-bottom: calc(var(--angled-rise, 124px) + 12px + var(--pin-lane-bottom));
+  --item-h: calc(var(--dot-bottom) + var(--dot-size, 15px) + var(--delta-font-size, 15px) + 14px + var(--pin-lane-top));
 }
 
 .track.angled-text.pos-name-bottom .dot {
