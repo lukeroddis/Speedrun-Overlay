@@ -673,6 +673,8 @@
       saveLayout();
     }
     applyAllLayouts();
+    // Ghost pins show as previews while editing (and go when locked), so the layout matches the run
+    window.LiveSplit.Overlay.refreshIdlePins?.();
     const rc = window.LiveSplit.RaceClient ? (window.LiveSplit.RaceClient.instance || window.LiveSplit.RaceClient) : null;
     if (typeof window.LiveSplit.Leaderboard?.renderLeaderboard === "function") {
       const isSim = rc ? (typeof rc.isSimulating === "function" ? rc.isSimulating() : !!rc.isSimulating) : false;

@@ -272,6 +272,7 @@ Object.assign(app, {
   getOrCreateGhostMarker: ghostRunner.getOrCreateGhostMarker,
   refreshLeaderboard: ghostRunner.refreshLeaderboard,
   updateGhostRunner: ghostRunner.updateGhostRunner,
+  refreshIdlePins: ghostRunner.refreshIdlePins,
   setGhostComparison: ghostRunner.setGhostComparison,
   toggleGhostComparison: ghostRunner.toggleGhostComparison,
   cycleGhostComparison: ghostRunner.cycleGhostComparison,

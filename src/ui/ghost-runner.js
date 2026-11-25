@@ -7,6 +7,8 @@
  * - Live race competitor pins (delegated to LiveSplit.RaceTrackMarkers)
  * - Off-screen edge pills with live deltas vs each ghost
  * - The F1 leaderboard refresh
+ * Outside a run, refreshIdlePins keeps the track's pin room steady and draws preview pins in
+ * Edit Layout Mode.
  *
  * Run state is read through getters injected by overlay.js.
  */
@@ -53,6 +55,24 @@
       if (Array.isArray(saved) && saved.length > 0) return saved;
     } catch (e) {}
     return ["pb"];
+  }
+
+  /**
+   * The run time (seconds) Edit Layout Mode's preview pins are drawn at, when no run is in
+   * progress: halfway through the second split on screen, so the pins stand on the visible track.
+   * 0 when the comparison has no usable times (nothing to preview).
+   * @param {Array<number|null>} comparisonTimes - Cumulative comparison split times (seconds)
+   * @param {number} windowStart - First split shown by the sliding track window
+   */
+  function pinPreviewTime(comparisonTimes, windowStart = 0) {
+    const times = Array.isArray(comparisonTimes) ? comparisonTimes : [];
+    const first = Math.max(0, Math.min(times.length - 1, (windowStart || 0) + 1));
+    for (let i = first; i < times.length; i++) {
+      const end = times[i];
+      const start = i === 0 ? 0 : times[i - 1];
+      if (end > 0 && start >= 0 && start != null && end > start) return (start + end) / 2;
+    }
+    return 0;
   }
 
   function clearMarkerOffsets(m) {
@@ -297,6 +317,58 @@
       return { startCoord, endCoord, prevNode, nextNode };
     }
 
+    // The ghosts switched on, and the race entrants whose pins are shown
+    function getPinSources() {
+      const activeList = activeGhostComparisons.filter(g => g && g !== "off");
+      const rc = getRaceClient();
+      const isSim = rc ? (typeof rc.isSimulating === "function" ? rc.isSimulating() : !!rc.isSimulating) : false;
+      const isConn = rc ? (typeof rc.isConnected === "function" ? rc.isConnected() : !!rc.isConnected) : false;
+      const isRaceActive = isSim || isConn;
+      const areRacePinsOn = rc && typeof rc.areRacePinsVisible === "function" ? rc.areRacePinsVisible() : true;
+      const raceEntrants = (isRaceActive && areRacePinsOn)
+        ? rc.getRankedEntrants().filter(e => !e.isHost && !e.isMuted)
+        : [];
+      return { activeList, raceEntrants };
+    }
+
+    // The pin lane (track-style "pinLane") reserves space while pins are switched on, whether or
+    // not a run is going, so the track keeps its size when the timer starts
+    function syncPinRoom(track, activeList, raceEntrants) {
+      track.classList.toggle("has-pins", activeList.length > 0 || raceEntrants.length > 0);
+    }
+
+    let isPreviewingPins = false;
+
+    /**
+     * Outside a run (no ticks): keeps the track's pin room in step with the pins switched on and,
+     * in Edit Layout Mode, draws them as preview pins partway through the visible splits (see
+     * pinPreviewTime) so the layout can be set up as it will look during the run. Called whenever
+     * the track status changes (render, splits, style, ghosts, edit mode).
+     */
+    function refreshIdlePins() {
+      const track = document.getElementById("track");
+      if (!track) return;
+      const { activeList, raceEntrants } = getPinSources();
+      syncPinRoom(track, activeList, raceEntrants);
+      // A run in progress (or restored, waiting for LiveSplit's ticks) shows its own pins
+      const lastElapsedSec = getLastElapsedSec();
+      if (lastElapsedSec > 0) {
+        isPreviewingPins = false;
+        updateGhostRunner(lastElapsedSec);
+        return;
+      }
+      const isEditMode = !!window.hudLayout?.isEditMode?.();
+      const previewSec = isEditMode ? pinPreviewTime(getComparisonTimes(), getTrackWindowStart()) : 0;
+      if (previewSec > 0) {
+        isPreviewingPins = true;
+        updateGhostRunner(previewSec);
+      } else if (isPreviewingPins) {
+        isPreviewingPins = false;
+        hideAllGhostMarkers();
+        hideEdgePills();
+      }
+    }
+
     function updateGhostRunner(currentSec) {
       const edgeLeft = document.getElementById("ghost-edge-left");
       const edgeRight = document.getElementById("ghost-edge-right");
@@ -310,18 +382,9 @@
       const comparisonTimes = getComparisonTimes();
       const currentIndex = getCurrentIndex();
 
-      const activeList = activeGhostComparisons.filter(g => g && g !== "off");
-      const rc = getRaceClient();
-      const isSim = rc ? (typeof rc.isSimulating === "function" ? rc.isSimulating() : !!rc.isSimulating) : false;
-      const isConn = rc ? (typeof rc.isConnected === "function" ? rc.isConnected() : !!rc.isConnected) : false;
-      const isRaceActive = isSim || isConn;
-      const areRacePinsOn = rc && typeof rc.areRacePinsVisible === "function" ? rc.areRacePinsVisible() : true;
-      const raceEntrants = (isRaceActive && areRacePinsOn)
-        ? rc.getRankedEntrants().filter(e => !e.isHost && !e.isMuted)
-        : [];
-
-      // The pin lane (track-style "pinLane") only reserves space while pins are switched on
-      track.classList.toggle("has-pins", activeList.length > 0 || raceEntrants.length > 0);
+      const { activeList, raceEntrants } = getPinSources();
+      syncPinRoom(track, activeList, raceEntrants);
+      if (getLastElapsedSec() > 0) isPreviewingPins = false;
 
       if ((activeList.length === 0 && raceEntrants.length === 0) || currentSec === null || currentSec < 0 || splitsList.length === 0) {
         hideAllGhostMarkers();
@@ -469,6 +532,7 @@
       } else if (lastElapsedSec > 0) {
         updateGhostRunner(lastElapsedSec);
       }
+      refreshIdlePins();
 
       if (window.hudLayout && window.hudLayout.syncTrackModalUI) {
         window.hudLayout.syncTrackModalUI();
@@ -552,6 +616,7 @@
       refreshLeaderboard,
       hideAllGhostMarkers,
       updateGhostRunner,
+      refreshIdlePins,
       setGhostComparison,
       toggleGhostComparison,
       cycleGhostComparison,
@@ -563,6 +628,7 @@
 
   window.LiveSplit = window.LiveSplit || {};
   window.LiveSplit.GhostRunner = {
+    pinPreviewTime,
     createGhostRunner,
     renderEdgePill
   };

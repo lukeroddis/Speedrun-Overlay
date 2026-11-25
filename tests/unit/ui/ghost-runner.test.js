@@ -115,4 +115,83 @@
       }
     });
   });
+
+  describe("Ghost Runner: pins outside a run", () => {
+    const preview = window.LiveSplit.GhostRunner.pinPreviewTime;
+
+    it("pinPreviewTime is halfway through the second split on screen", () => {
+      assertEqual(preview([10, 30, 60], 0), 20, "split 1 runs 10s to 30s");
+      assertEqual(preview([10, 30, 60, 100], 2), 80, "windowed: second split shown is split 3");
+      assertEqual(preview([10, null, 60, 100], 0), 80, "skips splits without a usable time");
+      assertEqual(preview([10], 0), 5, "a single split: halfway through it");
+      assertEqual(preview([], 0), 0, "nothing to preview");
+      assertEqual(preview([null, null], 0), 0);
+      assertEqual(preview(undefined), 0);
+    });
+
+    // A small track of our own (ids win over the runner page's), the "test" ghost switched on
+    function withIdleRunner(opts, fn) {
+      const KEYS = window.LiveSplit.Storage.KEYS;
+      const savedGhosts = localStorage.getItem(KEYS.ACTIVE_GHOSTS);
+      const dom = window.TestUtils.mountHtml(`
+        <div id="ghost-edge-left" style="display: none;"></div><div id="ghost-edge-right" style="display: none;"></div>
+        <div id="track-viewport" style="width: 800px;"><div id="track" class="track" style="position: relative; display: flex;">
+          <div id="node-start" style="width: 100px;"></div>
+          <div id="item-0" class="split-item" style="width: 100px;"></div>
+          <div id="item-1" class="split-item" style="width: 100px;"></div>
+          <div id="item-2" class="split-item" style="width: 100px;"></div>
+        </div></div>`);
+      const times = [10, 30, 60];
+      let editing = !!opts.editing;
+      let elapsed = opts.elapsed || 0;
+      localStorage.setItem(KEYS.ACTIVE_GHOSTS, JSON.stringify(opts.ghosts || ["test"]));
+      const runner = window.LiveSplit.GhostRunner.createGhostRunner({
+        getSplitsList: () => ["A", "B", "C"],
+        getComparisonTimes: () => times,
+        getLastElapsedSec: () => elapsed,
+        getGhostInfo: (id) => (id === "test" ? { id: "test", name: "Test", icon: "T", color: "#fff", times } : null)
+      });
+      const marker = () => document.getElementById("ghost-marker-test");
+      const shown = () => !!marker() && marker().style.display !== "none";
+      try {
+        return window.TestUtils.stubProps(window.hudLayout, { isEditMode: () => editing }, () => fn({
+          runner, track: dom.el("track"), shown,
+          setEditing: (v) => { editing = v; },
+          setElapsed: (v) => { elapsed = v; }
+        }));
+      } finally {
+        marker()?.remove();
+        dom.remove();
+        if (savedGhosts === null) localStorage.removeItem(KEYS.ACTIVE_GHOSTS); else localStorage.setItem(KEYS.ACTIVE_GHOSTS, savedGhosts);
+      }
+    }
+
+    it("reserves the pin room before the run, so the track keeps its size when the timer starts", () => withIdleRunner({}, ({ runner, track, shown }) => {
+      runner.refreshIdlePins();
+      assert(track.classList.contains("has-pins"), "room reserved with no run");
+      assert(!shown(), "no pins drawn outside Edit Layout Mode");
+    }));
+
+    it("draws preview pins in Edit Layout Mode and takes them away when locked", () => withIdleRunner({}, ({ runner, shown, setEditing }) => {
+      setEditing(true);
+      runner.refreshIdlePins();
+      assert(shown(), "preview pin while editing");
+      setEditing(false);
+      runner.refreshIdlePins();
+      assert(!shown(), "gone once the layout is locked");
+    }));
+
+    it("switching a ghost on while editing previews it straight away", () => withIdleRunner({ editing: true, ghosts: ["off"] }, ({ runner, track, shown }) => {
+      runner.refreshIdlePins();
+      assert(!shown() && !track.classList.contains("has-pins"), "nothing while ghosts are off");
+      runner.setGhostComparison("test");
+      assert(shown() && track.classList.contains("has-pins"), "previewed and room reserved");
+    }));
+
+    it("a run in progress shows its own pins, not the preview, even before LiveSplit ticks", () => withIdleRunner({ editing: true, elapsed: 50 }, ({ runner, shown, setEditing }) => {
+      setEditing(false);
+      runner.refreshIdlePins();
+      assert(shown(), "a restored run's pins are drawn at its elapsed time");
+    }));
+  });
 })();

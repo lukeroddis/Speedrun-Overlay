@@ -59,6 +59,8 @@
       getNodeTextThreshold: app.getNodeTextThreshold,
       setGhostOpacity: app.setGhostOpacity,
       updateGhostRunner: app.updateGhostRunner,
+      // Pin room and Edit Layout Mode preview pins outside a run
+      refreshIdlePins: app.refreshIdlePins,
 
       // Run progress & track
       handleUndoSplit: app.handleUndoSplit,
