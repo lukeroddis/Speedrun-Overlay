@@ -105,3 +105,47 @@
 .track.vertical.pins-left .ghost-marker.race-competitor:hover .racer-tag {
   transform: translateY(-50%) translateX(-8px);
 }
+
+/* Tag side chosen on hover so the track doesn't cut it off (src/ui/pin-tag-placement.js):
+   data-tag-side above / below / left / right wins over the defaults above. The head may be
+   splayed (--ghost-splay-x on a horizontal track, -y on a vertical one); the tag follows it. */
+#track .ghost-marker[data-tag-side="above"] .racer-tag {
+  top: auto;
+  right: auto;
+  bottom: calc(100% - var(--ghost-splay-y, 0px));
+  left: calc(50% + var(--ghost-splay-x, 0px));
+  transform: translateX(-50%) translateY(-4px);
+}
+#track .ghost-marker[data-tag-side="above"]:hover .racer-tag {
+  transform: translateX(-50%) translateY(-6px);
+}
+#track .ghost-marker[data-tag-side="below"] .racer-tag {
+  bottom: auto;
+  right: auto;
+  top: calc(100% + var(--ghost-splay-y, 0px));
+  left: calc(50% + var(--ghost-splay-x, 0px));
+  transform: translateX(-50%) translateY(4px);
+}
+#track .ghost-marker[data-tag-side="below"]:hover .racer-tag {
+  transform: translateX(-50%) translateY(6px);
+}
+#track .ghost-marker[data-tag-side="right"] .racer-tag {
+  bottom: auto;
+  right: auto;
+  top: calc(50% + var(--ghost-splay-y, 0px));
+  left: calc(100% + var(--ghost-splay-x, 0px));
+  transform: translateY(-50%) translateX(4px);
+}
+#track .ghost-marker[data-tag-side="right"]:hover .racer-tag {
+  transform: translateY(-50%) translateX(6px);
+}
+#track .ghost-marker[data-tag-side="left"] .racer-tag {
+  bottom: auto;
+  left: auto;
+  top: calc(50% + var(--ghost-splay-y, 0px));
+  right: calc(100% - var(--ghost-splay-x, 0px));
+  transform: translateY(-50%) translateX(-4px);
+}
+#track .ghost-marker[data-tag-side="left"]:hover .racer-tag {
+  transform: translateY(-50%) translateX(-6px);
+}

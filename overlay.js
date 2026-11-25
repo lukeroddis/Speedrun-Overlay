@@ -234,6 +234,8 @@ function initOverlay() {
   window.LiveSplit.SettingsMenu.initSettingsMenuDraggable();
   setupTrackScrollInteractions();
   splitTooltip.bind();
+  // Pin hover tags go on whichever side the track has room for
+  window.LiveSplit.PinTagPlacement.bindPinTagPlacement();
   app.loadCachedSplits();
   updateTrackDensityAndAngle();
 
