@@ -12,6 +12,8 @@
  * - Free track dragging (docking only via the dock button; dragging a docked track undocks it),
  *   keeping its size fixed and the whole scaled track (and its resize handle) on screen
  * - Dedicated leaderboard header drag support
+ * - Edit-mode header placement (editHeaderPlacement): above the component, or below / inside it
+ *   when there is no room, so locking the layout moves nothing
  * - Dock toggle button handling (#btn-dock-track): docks to the nearest edge (top/bottom, or left/right
  *   when vertical)
  */
@@ -59,6 +61,20 @@
     if (baseW > 0) fits.push((viewportWidth - x) / baseW);
     if (baseH > 0) fits.push((viewportHeight - y) / baseH);
     return Math.max(0.4, Math.floor(Math.min(...fits) * 100) / 100);
+  }
+
+  /**
+   * Where a component's edit-mode header floats, outside its box so the content does not move when
+   * the layout is locked. rect is the component's screen box; headerW / headerH the header's screen
+   * size. side: "above" when it fits above, else "below", else "inside" (overlaying the top edge, e.g.
+   * a track docked full height). alignEnd: grow leftwards from the right edge when it would run off
+   * the right of the screen from the left edge.
+   */
+  function editHeaderPlacement(rect, headerW, headerH, viewportWidth, viewportHeight) {
+    let side = "above";
+    if (rect.top < headerH) side = rect.bottom + headerH <= viewportHeight ? "below" : "inside";
+    const alignEnd = rect.left + headerW > viewportWidth && rect.right - headerW >= 0;
+    return { side, alignEnd };
   }
 
   function isTrackFloating(state) {
@@ -463,6 +479,7 @@
     MAX_NAME_LINES,
     effectiveDockSide,
     chooseDockSide,
+    editHeaderPlacement,
     createLayoutDrag
   };
 })();

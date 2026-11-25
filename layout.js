@@ -442,6 +442,33 @@
   }
 
   function applyComponentLayout(compId) {
+    positionComponent(compId);
+    if (isEditMode) placeEditHeader(document.getElementById(`hud-comp-${compId}`));
+  }
+
+  /**
+   * Floats the component's edit-mode header outside its box (above, or below / inside when there is
+   * no room), so the content is laid out exactly as it will be once the layout is locked.
+   */
+  function placeEditHeader(el) {
+    const header = el && el.querySelector(".hud-component-header");
+    if (!header) return;
+    const rect = el.getBoundingClientRect();
+    if (!rect.width && !rect.height) return; // hidden
+    const scale = el.offsetWidth > 0 ? rect.width / el.offsetWidth : 1;
+    const placement = window.LiveSplit.LayoutDrag.editHeaderPlacement(
+      rect,
+      (header.offsetWidth || rect.width) * scale,
+      (header.offsetHeight || 28) * scale,
+      window.innerWidth || 1920,
+      window.innerHeight || 1080
+    );
+    el.classList.toggle("edit-header-below", placement.side === "below");
+    el.classList.toggle("edit-header-inside", placement.side === "inside");
+    el.classList.toggle("edit-header-end", placement.alignEnd);
+  }
+
+  function positionComponent(compId) {
     const el = document.getElementById(`hud-comp-${compId}`);
     if (!el) return;
     if (!layoutState) layoutState = loadSavedLayout();

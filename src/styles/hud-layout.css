@@ -50,9 +50,11 @@ body.edit-mode .hud-component {
   cursor: grab;
 }
 
+/* Raised so its floating header shows over a neighbour's */
 body.edit-mode .hud-component:hover {
   outline: 2px solid #38bdf8;
   background: rgba(15, 23, 42, 0.92);
+  z-index: 30;
 }
 
 body.edit-mode .hud-component.is-dragging {
@@ -67,24 +69,64 @@ body.edit-mode .hud-component.is-scaling {
   z-index: 100 !important;
 }
 
-/* Header inside each component during Edit Mode */
+/* Header on each component during Edit Mode. It floats outside the component's box (above it,
+   or below / inside it when there is no room: layout.js picks via LayoutDrag.editHeaderPlacement),
+   so the content sits exactly where it will once the layout is locked. */
 .hud-component-header {
   display: none;
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: auto;
+  min-width: 100%;
+  width: max-content;
+  box-sizing: border-box;
+  gap: 10px;
   align-items: center;
   justify-content: space-between;
   padding: 4px 10px;
   background: rgba(30, 41, 59, 0.95);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-bottom: none;
   border-top-left-radius: 6px;
   border-top-right-radius: 6px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
   font-size: 11px;
   font-family: monospace;
+  white-space: nowrap;
   color: #cbd5e1;
   user-select: none;
+  z-index: 11;
 }
 
 body.edit-mode .hud-component-header {
   display: flex;
+}
+
+/* No room above (top of the screen, a top-docked track): hang it below the component */
+.hud-component.edit-header-below > .hud-component-header {
+  bottom: auto;
+  top: 100%;
+  border-top: none;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 0 0 6px 6px;
+}
+
+/* No room above or below (a track docked full height): overlay the component's top edge */
+.hud-component.edit-header-inside > .hud-component-header {
+  bottom: auto;
+  top: 0;
+  border-radius: 0 0 6px 0;
+}
+
+/* Too wide to extend right from the component's left edge: grow leftwards from its right edge */
+.hud-component.edit-header-end > .hud-component-header {
+  left: auto;
+  right: 0;
+}
+
+/* The leaderboard clips its content; let its floating header show */
+body.edit-mode #hud-comp-leaderboard {
+  overflow: visible;
 }
 
 .hud-drag-handle {
@@ -199,11 +241,6 @@ body.edit-mode .hud-resize-handle {
   border-top-left-radius: 0;
   border-bottom-right-radius: 0;
   border-bottom-left-radius: 6px;
-}
-
-/* ...which is the header's right end: keep the cog / hide buttons clear of it */
-#hud-comp-track.docked-bottom .hud-component-header {
-  padding-right: 28px;
 }
 
 /* Docked Top state for Track (mirror of the bottom dock) */

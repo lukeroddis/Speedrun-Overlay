@@ -14,6 +14,18 @@
       assertEqual(typeof window.LiveSplit.LayoutDrag.computeScale, "function", "computeScale is a function");
     });
 
+    it("editHeaderPlacement floats the header above, below or inside, and grows it leftwards at the right edge", () => {
+      const place = window.LiveSplit.LayoutDrag.editHeaderPlacement;
+      const box = (left, top, width, height) => ({ left, top, right: left + width, bottom: top + height, width, height });
+      assertEqual(place(box(100, 200, 300, 80), 250, 26, 1920, 1080), { side: "above", alignEnd: false }, "room above");
+      assertEqual(place(box(100, 10, 300, 80), 250, 26, 1920, 1080), { side: "below", alignEnd: false }, "too close to the top");
+      assertEqual(place(box(0, 0, 340, 1080), 250, 26, 1920, 1080), { side: "inside", alignEnd: false }, "full-height docked track");
+      assertEqual(place(box(0, 1000, 1920, 80), 250, 26, 1920, 1080).side, "above", "bottom-docked track");
+      assertEqual(place(box(0, 0, 1920, 80), 250, 26, 1920, 1080).side, "below", "top-docked track");
+      assertEqual(place(box(1800, 200, 100, 60), 250, 26, 1920, 1080).alignEnd, true, "would run off the right edge");
+      assertEqual(place(box(10, 200, 100, 60), 250, 26, 200, 1080).alignEnd, false, "growing leftwards would run off the left edge too");
+    });
+
     it("clamps drag coordinates within viewport bounds", () => {
       const clamp = window.LiveSplit.LayoutDrag.clampCoordinates;
 

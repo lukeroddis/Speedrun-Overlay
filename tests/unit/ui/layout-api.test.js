@@ -233,6 +233,29 @@
       assert(title.classList.contains("edit-hidden") && !title.classList.contains("is-hidden"), "edit mode shows it dimmed");
     }));
 
+    it("edit mode floats each header above its component, or below it at the top of the screen", () => withHud(({ el, state }) => {
+      const title = el("hud-comp-title");
+      const header = document.createElement("div");
+      header.className = "hud-component-header";
+      header.style.cssText = "position: absolute; width: 200px; height: 24px;";
+      title.prepend(header);
+      title.style.width = "300px";
+      title.style.height = "60px";
+
+      Object.assign(state.title, { visible: true, scale: 1, x: 40, y: 200 });
+      HL().setEditMode(true);
+      assert(!title.classList.contains("edit-header-below") && !title.classList.contains("edit-header-inside"), "room above: stays above");
+
+      state.title.y = 0;
+      HL().applyComponentLayout("title");
+      assert(title.classList.contains("edit-header-below"), "at the top edge it hangs below");
+
+      Object.assign(state.title, { y: 200, x: window.innerWidth - 100 });
+      header.style.width = "260px";
+      HL().applyComponentLayout("title");
+      assert(title.classList.contains("edit-header-end"), "near the right edge it grows leftwards");
+    }));
+
     it("setComponentVisible hides / shows a component, saves, and creates a missing entry", () => withHud(({ el, state }) => {
       HL().setComponentVisible("title", true);
       assertEqual(el("hud-comp-title").querySelector('[data-action="toggle-visibility"]').textContent, "✕", "visible: offers to hide");
