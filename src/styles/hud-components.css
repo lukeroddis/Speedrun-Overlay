@@ -50,6 +50,18 @@
   padding: 4px 6px;
 }
 
+/* Stacked (layout state timers.layout): Real Time above Game Time, right-aligned like a timer */
+#hud-comp-timers.timers-stacked .timer-group {
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+/* Game Time first (layout state timers.order): left of Real Time, or above it when stacked */
+#hud-comp-timers.timers-game-first #block-igt {
+  order: -1;
+}
+
 .timer-block {
   display: flex;
   flex-direction: column;

@@ -241,7 +241,7 @@ Layout profiles are stored and exported as formatted JSON with the following ext
   "generator": "Speedrun Overlay v1.0.0",
   "components": {
     "title": { "x": 42, "y": 30, "scale": 1.0, "visible": true },
-    "timers": { "x": 42, "y": 90, "scale": 1.15, "visible": true },
+    "timers": { "x": 42, "y": 90, "scale": 1.15, "visible": true, "layout": "row", "order": "realFirst" },
     "track": { "x": 0, "y": 990, "scale": 1.0, "visible": true, "docked": "bottom" }
   },
   "style": {
@@ -278,6 +278,8 @@ Layout profiles are stored and exported as formatted JSON with the following ext
 }
 ```
 
+* **Timer layout**: `components.timers.layout` is `row` (Real and Game time side by side, the default) or `stacked` (one above the other, right-aligned): the `timers-stacked` class on `#hud-comp-timers`, set by `layout.js` (`hudLayout.setTimerLayout`, registry setting `timerLayout`, shown while both timers are).
+* **Timer order**: `components.timers.order` is `realFirst` (Real Time left, or on top when stacked; the default) or `gameFirst` (the `timers-game-first` class moves `#block-igt` first with CSS `order`), set by `hudLayout.setTimerOrder` / registry setting `timerOrder` (shown while both timers are).
 * **Ghost pin side**: `pinPos` is `auto` (top, or the delta side of a vertical track) or an explicit `top`/`bottom`/`left`/`right`, resolved by `TrackStyle.resolvePinSide` into a `pins-<side>` track class. With `pinLane` on, the track also gets `pin-lane`, and while any ghost or race pins are switched on the ghost runner adds `has-pins` (before the run too, so the track keeps its size when the timer starts); together they keep pins clear of split text. Flat horizontal text stays next to the bar and the pins reach past it: `--pin-length` (used for every horizontal pin) becomes the larger of the configured length and the text's reach on the pin side (`--text-top` / `--text-bottom`, set per name/delta layout), the needle passing behind the text (z-index 5 vs 15), with room beyond the text for the largest head (44px). Angled text and vertical tracks instead push the text out by `--pin-lane`.
 * **Track height (horizontal)**: compact, and independent of the pin head size. `--pin-reach` is the whole pin (bar edge to the far edge of the head): the pin length plus a 26px reference head; `--pin-length` (the needle) is what the head leaves of it, and `TrackStyle.maxPinHeadSize` caps the drawn head at the reach (a zero-length, on-track pin keeps its size and gets room for a 44px head). Each text layout sets `--item-h` (a split's height); pin heads reaching above it (`--pin-overhang`, from `--bar-top` + `--pin-reach`) are what the top padding makes room for, on top of a 6px margin. The bottom padding is 4px (0 for angled text) unless pins below the bar need more.
 * **Backward Compatibility**: If an older layout missing newer properties (e.g. `logoHeight` or future properties) is loaded, `applyProfileData` deep-merges with `getDefaultLayout()` and `DEFAULT_TRACK_STYLE` so default values are gracefully applied without errors.

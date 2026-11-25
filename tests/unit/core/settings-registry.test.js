@@ -80,7 +80,7 @@
     it("lists settings by surface and group, in registry order", () => {
       const dock = R.listSettings("dock");
       assertEqual(dock.length, R.SETTINGS.length, "every live setting is on the dock");
-      assertEqual(R.listSettings("widget", "timers").map((d) => d.id), ["comparison", "timerDisplay", "timingMethod"]);
+      assertEqual(R.listSettings("widget", "timers").map((d) => d.id), ["comparison", "timerDisplay", "timingMethod", "timerLayout", "timerOrder"]);
       assert(!R.listSettings("widget").some((d) => d.id.startsWith("visible.")), "visibility is the close button, not a widget setting");
       assertEqual(R.getSettingDef("nope"), null);
     });

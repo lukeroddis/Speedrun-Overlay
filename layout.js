@@ -63,7 +63,11 @@
         scale: 1.0,
         visible: true,
         docked: "none",
-        anchor: "auto"
+        anchor: "auto",
+        // "row": Real and Game time side by side; "stacked": one above the other
+        layout: "row",
+        // Which timer comes first (left, or top when stacked): "realFirst" | "gameFirst"
+        order: "realFirst"
       },
       track: {
         x: 0,
@@ -371,6 +375,26 @@
     return e ? e.getAnchor() : ((layoutState && layoutState.timers && layoutState.timers.anchor) || localStorage.getItem(STORAGE_KEYS.TIMER_ANCHOR) || "auto");
   }
 
+  /** Timers side by side ("row") or one above the other ("stacked"); saved with the layout. */
+  function setTimerLayout(value) {
+    if (value !== "row" && value !== "stacked") return;
+    if (!layoutState) layoutState = loadSavedLayout();
+    if (!layoutState.timers) layoutState.timers = getDefaultLayout().timers;
+    layoutState.timers.layout = value;
+    applyComponentLayout("timers");
+    saveLayout();
+  }
+
+  /** Real Time first ("realFirst", left / top) or Game Time first ("gameFirst"); saved with the layout. */
+  function setTimerOrder(value) {
+    if (value !== "realFirst" && value !== "gameFirst") return;
+    if (!layoutState) layoutState = loadSavedLayout();
+    if (!layoutState.timers) layoutState.timers = getDefaultLayout().timers;
+    layoutState.timers.order = value;
+    applyComponentLayout("timers");
+    saveLayout();
+  }
+
   function setTimerAnchor(anchor) {
     const e = getTimerAnchorEngine();
     if (e) {
@@ -601,6 +625,9 @@
 
     // Standard floating component (title, timers)
     if (compId === "timers") {
+      // Before measuring: stacking changes the widget's width
+      el.classList.toggle("timers-stacked", state.layout === "stacked");
+      el.classList.toggle("timers-game-first", state.order === "gameFirst");
       const anchorPref = getTimerAnchor();
       const compWidth = el.offsetWidth || 300;
       let isRight = false;
@@ -820,6 +847,8 @@
     syncProfileUI,
     getTimerAnchor,
     setTimerAnchor,
+    setTimerLayout,
+    setTimerOrder,
     cycleTimerAnchor,
     syncTimerAnchorUI
   };

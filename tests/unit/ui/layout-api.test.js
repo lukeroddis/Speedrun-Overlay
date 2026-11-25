@@ -204,6 +204,40 @@
       delete state.track.height;
     }));
 
+    it("stacks the timers one above the other, saved with the layout and set through the registry", () => withHud(({ el, state }) => {
+      const timers = el("hud-comp-timers");
+      assertEqual(state.timers.layout, "row", "side by side by default");
+      HL().setTimerLayout("stacked");
+      assert(timers.classList.contains("timers-stacked"));
+      assertEqual(JSON.parse(localStorage.getItem(KEYS.HUD_LAYOUT)).timers.layout, "stacked", "saved");
+
+      HL().setTimerLayout("diagonal");
+      assertEqual(state.timers.layout, "stacked", "unknown layouts ignored");
+
+      const def = window.LiveSplit.SettingsRegistry.getSettingDef("timerLayout");
+      assertEqual(def.get(), "stacked");
+      def.set({}, "row");
+      assert(!timers.classList.contains("timers-stacked"), "back side by side");
+      assertEqual(def.get(), "row");
+    }));
+
+    it("puts Game Time first (left, or on top when stacked) when asked, saved and set through the registry", () => withHud(({ el, state }) => {
+      const timers = el("hud-comp-timers");
+      assertEqual(state.timers.order, "realFirst", "Real Time first by default");
+      HL().setTimerOrder("gameFirst");
+      assert(timers.classList.contains("timers-game-first"));
+      assertEqual(JSON.parse(localStorage.getItem(KEYS.HUD_LAYOUT)).timers.order, "gameFirst", "saved");
+
+      HL().setTimerOrder("sideways");
+      assertEqual(state.timers.order, "gameFirst", "unknown orders ignored");
+
+      const def = window.LiveSplit.SettingsRegistry.getSettingDef("timerOrder");
+      assertEqual(def.get(), "gameFirst");
+      def.set({}, "realFirst");
+      assert(!timers.classList.contains("timers-game-first"), "Real Time first again");
+      assertEqual(def.get(), "realFirst");
+    }));
+
     it("positions the timers from their right edge when right-anchored, left edge when left-anchored", () => withHud(({ el, state }) => {
       const timers = el("hud-comp-timers");
       Object.assign(state.timers, { x: 100, y: 30, scale: 1, anchor: "right", right: 25 });

@@ -122,6 +122,32 @@
       set: (app, value) => app.setTimingMethodFocus(value)
     },
     {
+      id: "timerLayout",
+      label: "Timer layout",
+      group: "timers",
+      where: ["dock", "widget"],
+      type: "enum",
+      options: ["row", "stacked"],
+      optionLabels: { row: "Side by side", stacked: "Stacked" },
+      // Stacking only matters while both timers are shown
+      showIf: { setting: "timerDisplay", equals: "both" },
+      get: () => (getLayoutEntry("timers")?.layout === "stacked" ? "stacked" : "row"),
+      set: (app, value) => window.hudLayout?.setTimerLayout?.(value)
+    },
+    {
+      id: "timerOrder",
+      label: "Timer order",
+      group: "timers",
+      where: ["dock", "widget"],
+      type: "enum",
+      // Left to right side by side, top to bottom stacked
+      options: ["realFirst", "gameFirst"],
+      optionLabels: { realFirst: "Real, Game", gameFirst: "Game, Real" },
+      showIf: { setting: "timerDisplay", equals: "both" },
+      get: () => (getLayoutEntry("timers")?.order === "gameFirst" ? "gameFirst" : "realFirst"),
+      set: (app, value) => window.hudLayout?.setTimerOrder?.(value)
+    },
+    {
       id: "trackView",
       label: "Track view",
       group: "track",
