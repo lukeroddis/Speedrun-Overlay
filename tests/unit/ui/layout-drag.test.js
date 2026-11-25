@@ -113,6 +113,16 @@
       assertEqual(["top", "bottom", "left", "right"].map((d) => side(d, true)), ["left", "left", "left", "right"]);
     });
 
+    it("computeBoxResize sizes the Current Split box, clamped to its minimum and the screen", () => {
+      const resize = window.LiveSplit.LayoutDrag.computeBoxResize;
+      const base = { x: 100, y: 100, baseW: 280, baseH: 240, scale: 1, minW: 180, minH: 80, viewportWidth: 1000, viewportHeight: 800 };
+      assertEqual(resize(Object.assign({}, base, { dx: 40, dy: -40 })), { width: 320, height: 200 }, "both axes");
+      assertEqual(resize(Object.assign({}, base, { dx: -500, dy: -500 })), { width: 180, height: 80 }, "minimum size");
+      assertEqual(resize(Object.assign({}, base, { dx: 5000, dy: 5000 })), { width: 900, height: 700 }, "stops at the screen edge");
+      assertEqual(resize(Object.assign({}, base, { scale: 2, dx: 40, dy: 40 })), { width: 300, height: 260 }, "screen px divided by the scale");
+      assertEqual(resize(Object.assign({}, base, { scale: 2, dx: 5000, dy: 5000 })), { width: 450, height: 350 }, "the scaled box stays on screen");
+    });
+
     it("computeTrackResize clamps to the minimum size and the screen, and divides out the scale", () => {
       const resize = window.LiveSplit.LayoutDrag.computeTrackResize;
       const MIN = window.LiveSplit.LayoutDrag.TRACK_MIN_SIZE;

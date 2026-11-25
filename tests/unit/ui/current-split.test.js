@@ -305,7 +305,49 @@
       const noCard = CS.createCurrentSplitWidget({ el: null });
       noCard.update();
       noCard.refresh();
+      noCard.fit();
       assertEqual(noCard.getMode(), "", "no element: does nothing");
+    }));
+  });
+
+  describe("Current Split widget: fixed box, contents shrunk to fit", () => {
+    it("fitScale shrinks just enough, rounded down, never below the floor", () => {
+      assertEqual(CS.fitScale(100, 200), 1, "fits");
+      assertEqual(CS.fitScale(200, 200), 1, "exactly fits");
+      assertEqual(CS.fitScale(300, 200), 0.66, "2/3 rounded down");
+      assertEqual(CS.fitScale(1000, 100), CS.MIN_FIT_SCALE, "floor: cut off rather than unreadable");
+      assertEqual(CS.fitScale(0, 200), 1, "nothing measured");
+      assertEqual(CS.fitScale(300, 0), 1, "no box (hidden)");
+    });
+
+    it("shrinks a card taller than its box, and lets it grow back when the next card fits", () => withSettings(() => {
+      const dom = mountHtml(`<div id="cs-root"><div id="cs-card" style="height: 120px; overflow: hidden;">
+        <div id="cs-content" style="width: calc(100% / var(--card-fit, 1));"></div></div></div>`);
+      const state = makeState();
+      const widget = CS.createCurrentSplitWidget({
+        el: dom.el("cs-card"), content: dom.el("cs-content"), root: dom.el("cs-root"), getState: () => state, now: () => 1000
+      });
+      const content = dom.el("cs-content");
+      const fit = () => parseFloat(content.style.getPropertyValue("--card-fit"));
+      try {
+        // Every row on (default): taller than 120px
+        widget.update();
+        assert(content.textContent.includes("Alpha"), "rendered into the content element");
+        assert(fit() < 1, `shrunk to fit (got ${fit()})`);
+        assert(content.offsetHeight * fit() <= 120 + 1, "fits the box");
+
+        // No rows: short enough at full size
+        widget.setRows([]);
+        assertEqual(fit(), 1, "full size again");
+
+        // The box grows: refits even though the markup is unchanged
+        widget.setRows([...CS.ROW_OPTIONS]);
+        dom.el("cs-card").style.height = "1000px";
+        widget.fit();
+        assertEqual(fit(), 1, "a bigger box needs no shrinking");
+      } finally {
+        dom.remove();
+      }
     }));
   });
 })();

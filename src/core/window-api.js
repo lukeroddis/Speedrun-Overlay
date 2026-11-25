@@ -88,6 +88,8 @@
         app.updateTrackStatus(state.currentIndex);
       },
       setupTrackScrollInteractions: app.setupTrackScrollInteractions,
+      // Shrink the Current Split card to fit its widget after a resize
+      fitCurrentSplit: app.fitCurrentSplit,
 
       // Live settings by id (src/core/settings-registry.js)
       settings: app.settings,

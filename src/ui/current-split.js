@@ -15,6 +15,10 @@
  * - Undo, a reset mid-run or new splits drop any held or finished card.
  * - Which segment rows (this run, PB, best, average, WR) and the possible save it shows is a
  *   setting (the track's hover card always shows them all).
+ * - The widget has a fixed size (layout state width / height, set with its resize handle), so it
+ *   never grows mid-run: a card with more than fits (e.g. the run summary with its graph) is
+ *   shrunk to fit (fitScale, the --card-fit scale on the content), measured only when the card's
+ *   markup changes or the widget is resized.
  * Driven by `update()` from the poll loop (run-tracker.js) and track refreshes; does nothing
  * while the widget is hidden.
  */
@@ -31,6 +35,8 @@
   const FULL_REFRESH_MS = 250;
   // Glow length on the next split's card when there is no hold
   const NO_HOLD_FLASH_MS = 2000;
+  // Smallest shrink-to-fit scale: past it the card is cut off instead of unreadable
+  const MIN_FIT_SCALE = 0.4;
 
   function readStorage(key) {
     try {
@@ -81,6 +87,15 @@
     });
   }
 
+  /**
+   * Pure: the scale (MIN_FIT_SCALE to 1, two decimals, rounded down) that fits content of
+   * `natural` px height into `available` px; 1 when it fits or nothing is measured.
+   */
+  function fitScale(natural, available) {
+    if (!(natural > 0) || !(available > 0) || natural <= available) return 1;
+    return Math.max(MIN_FIT_SCALE, Math.floor((available / natural) * 100) / 100);
+  }
+
   /** Pure: the glow for a completed split's locked delta, or null (skipped / nothing compared). */
   function flashTypeFor(locked) {
     if (!locked || locked.splitTimeSec === null || !locked.stateClass || locked.stateClass === "uncoloured") return null;
@@ -89,18 +104,32 @@
 
   /**
    * @param {Object} options
-   * @param {HTMLElement} options.el - The card element
+   * @param {HTMLElement} options.el - The card element (the fixed-size box)
+   * @param {HTMLElement} [options.content] - The card's contents, shrunk to fit the box (default: el)
    * @param {HTMLElement} [options.root] - The widget (nothing renders while it has .is-hidden)
    * @param {Function} options.getState - The overlay state
    * @param {Function} [options.now] - Clock in ms
    */
   function createCurrentSplitWidget(options = {}) {
     const { el, root = null, getState = () => null, now = () => Date.now() } = options;
+    const content = options.content || el;
     if (!el) {
       const noop = () => {};
-      return { update: noop, refresh: noop, setHoldSeconds: noop, setAfterRun: noop, setRows: noop, getMode: () => "" };
+      return { update: noop, refresh: noop, fit: noop, setHoldSeconds: noop, setAfterRun: noop, setRows: noop, getMode: () => "" };
     }
-    const card = window.LiveSplit.SplitCard.createSplitCard(el);
+    let fitApplied = 1;
+
+    /** Shrinks the card's contents to fit the widget's box (after a rebuild or a resize). */
+    function fit() {
+      if (content === el || (root && root.classList.contains("is-hidden"))) return;
+      if (fitApplied !== 1) content.style.setProperty("--card-fit", "1");
+      // Measured at full size; at a smaller scale the text has more room, so it only gets shorter
+      const scale = fitScale(content.offsetHeight, el.clientHeight);
+      content.style.setProperty("--card-fit", String(scale));
+      fitApplied = scale;
+    }
+
+    const card = window.LiveSplit.SplitCard.createSplitCard(el, { content, onChange: fit });
     const SplitInfo = window.LiveSplit.SplitInfo;
     const RunSummary = window.LiveSplit.RunSummary;
 
@@ -220,6 +249,8 @@
       rows = getRows();
       mode = "";
       update();
+      // The markup may be unchanged (e.g. shown again): fit it to the box anyway
+      fit();
     }
 
     function setHoldSeconds(value) {
@@ -239,13 +270,15 @@
       refresh();
     }
 
-    return { update, refresh, setHoldSeconds, setAfterRun, setRows, getMode: () => mode };
+    return { update, refresh, fit, setHoldSeconds, setAfterRun, setRows, getMode: () => mode };
   }
 
   window.LiveSplit = window.LiveSplit || {};
   window.LiveSplit.CurrentSplit = {
     HOLD_SECONDS,
     AFTER_RUN_OPTIONS,
+    MIN_FIT_SCALE,
+    fitScale,
     ROW_OPTIONS,
     getHoldSeconds,
     getAfterRun,

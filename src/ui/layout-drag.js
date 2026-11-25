@@ -5,6 +5,8 @@
  * - Pointerdown, pointermove, pointerup/cancel lifecycle for HUD components
  * - Touch & mouse unified drag positioning with pointer capture
  * - Proportional scaling via scale handle drag (clamped 0.4x to 2.5x)
+ * - Current Split card resizing via the same handle (Ctrl/Shift-drag scales): its box's width and
+ *   height (computeBoxResize), which its contents shrink to fit
  * - Track resizing via the same handle (Ctrl/Shift-drag scales instead): a vertical track's width
  *   (room for split text) and height (split spacing); a horizontal track's width (split spacing,
  *   floating only) and height (lines for split names, docked too)
@@ -83,6 +85,23 @@
 
   // Smallest unscaled track sizes the resize handle allows
   const TRACK_MIN_SIZE = Object.freeze({ verticalWidth: 180, verticalHeight: 160, horizontalWidth: 320 });
+  // The Current Split widget's box: default and smallest unscaled size
+  const CURRENT_SPLIT_SIZE = Object.freeze({ width: 280, height: 240, minWidth: 180, minHeight: 80 });
+
+  /**
+   * New unscaled box size for a resize-handle drag of (dx, dy) screen px from its top-left anchored
+   * size baseW x baseH: at least the minimums, and small enough that the scaled box stays on screen.
+   * @param {Object} op - { x, y, baseW, baseH, scale, dx, dy, minW, minH, viewportWidth, viewportHeight }
+   */
+  function computeBoxResize(op) {
+    const scale = op.scale || 1;
+    const clamp = (v, min, max) => Math.round(Math.max(min, Math.min(Math.max(min, max), v)));
+    return {
+      width: clamp(op.baseW + op.dx / scale, op.minW, (op.viewportWidth - op.x) / scale),
+      height: clamp(op.baseH + op.dy / scale, op.minH, (op.viewportHeight - op.y) / scale)
+    };
+  }
+
   // Lines a horizontal track's split names may wrap onto (its height)
   const MAX_NAME_LINES = 4;
 
@@ -259,8 +278,8 @@
 
             const state = getLayoutState()[id];
             if (id === "track" && state) freezeTrackSize(state, el, isVerticalTrack());
-            // The track resizes (LiveSplit-style) unless Ctrl/Shift is held
-            const wantsResize = id === "track" && state && !(e.ctrlKey || e.metaKey || e.shiftKey);
+            // The track and the Current Split card resize (LiveSplit-style) unless Ctrl/Shift is held
+            const wantsResize = (id === "track" || id === "currentSplit") && state && !(e.ctrlKey || e.metaKey || e.shiftKey);
             const trackEl = document.getElementById("track");
             const nameFont = trackEl ? parseFloat(getComputedStyle(trackEl).getPropertyValue("--name-font-size")) : NaN;
             activePointerOp = {
@@ -398,6 +417,21 @@
           }
           state.scale = scale;
           applyComponentLayout(activePointerOp.compId);
+        } else if (activePointerOp.type === "resize" && activePointerOp.compId === "currentSplit") {
+          Object.assign(state, computeBoxResize({
+            x: state.x,
+            y: state.y,
+            baseW: activePointerOp.baseW,
+            baseH: activePointerOp.baseH,
+            scale: state.scale,
+            dx: e.clientX - activePointerOp.startX,
+            dy: e.clientY - activePointerOp.startY,
+            minW: CURRENT_SPLIT_SIZE.minWidth,
+            minH: CURRENT_SPLIT_SIZE.minHeight,
+            viewportWidth: w,
+            viewportHeight: h
+          }));
+          applyComponentLayout("currentSplit");
         } else if (activePointerOp.type === "resize") {
           const size = computeTrackResize({
             isVertical: isVerticalTrack(),
@@ -475,6 +509,8 @@
     fitTrackBox,
     freezeTrackSize,
     computeTrackResize,
+    computeBoxResize,
+    CURRENT_SPLIT_SIZE,
     TRACK_MIN_SIZE,
     MAX_NAME_LINES,
     effectiveDockSide,

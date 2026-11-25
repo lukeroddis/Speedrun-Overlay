@@ -1,23 +1,35 @@
 /* ============================================================
    CURRENT SPLIT WIDGET (src/ui/current-split.js)
-   The shared split card (split-card.css) as a HUD widget. Fixed width so the card does not
-   jump as rows come and go; size it with the component scale. The split glow
-   (split-flash.css) plays on the card and fades back to transparent over the plate.
+   The shared split card (split-card.css) as a HUD widget. A fixed box (width / height set by
+   layout.js from the resize handle) so the card never grows or jumps as rows come and go; a
+   card with more than fits is shrunk to fit (--card-fit, set by current-split.js). The split
+   glow (split-flash.css) plays on the card and fades back to transparent over the plate.
    ============================================================ */
 #hud-comp-currentSplit {
   width: 280px;
+  height: 240px;
   user-select: none;
 }
 
 .current-split-card {
   box-sizing: border-box;
-  padding: 10px 12px;
+  height: 100%;
+  overflow: hidden;
   border: 1px solid transparent;
   border-radius: 12px;
   color: #f1f5f9;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-size: 13px;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+/* Shrunk to fit the box: laid out wider by the same factor, so it still fills the width */
+.current-split-content {
+  box-sizing: border-box;
+  padding: 10px 12px;
+  width: calc(100% / var(--card-fit, 1));
+  transform: scale(var(--card-fit, 1));
+  transform-origin: top left;
 }
 
 #hud-comp-currentSplit.has-bg .current-split-card {

@@ -11,6 +11,7 @@
   const COMPONENTS = window.LiveSplit.LayoutEngine.COMPONENTS;
 
   const DEFAULT_TRACK_STYLE = window.LiveSplit.TrackStyle.DEFAULT_TRACK_STYLE;
+  const CURRENT_SPLIT_SIZE = window.LiveSplit.LayoutDrag.CURRENT_SPLIT_SIZE;
 
   const LOGO_STORAGE_KEY = STORAGE_KEYS.CUSTOM_LOGO;
 
@@ -75,6 +76,9 @@
       currentSplit: {
         x: Math.max(42, w - 340),
         y: 130,
+        // Fixed box (resize handle), so the card never grows mid-run: contents shrink to fit
+        width: CURRENT_SPLIT_SIZE.width,
+        height: CURRENT_SPLIT_SIZE.height,
         scale: 1.0,
         visible: false,
         docked: "none"
@@ -631,12 +635,17 @@
       return;
     }
 
+    if (compId === "currentSplit") {
+      el.style.width = `${state.width > 0 ? state.width : CURRENT_SPLIT_SIZE.width}px`;
+      el.style.height = `${state.height > 0 ? state.height : CURRENT_SPLIT_SIZE.height}px`;
+    }
     el.style.left = `${state.x}px`;
     el.style.right = "auto";
     el.style.top = `${state.y}px`;
     el.style.bottom = "";
     el.style.transform = `scale(${state.scale})`;
     el.style.transformOrigin = "top left";
+    if (compId === "currentSplit") window.LiveSplit.Overlay.fitCurrentSplit?.();
   }
 
   function applyAllLayouts() {

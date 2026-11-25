@@ -186,6 +186,7 @@ const splitTooltip = window.LiveSplit.SplitTooltip.createSplitTooltip({
 // Current Split widget (src/ui/current-split.js): follows the run every poll
 const currentSplit = window.LiveSplit.CurrentSplit.createCurrentSplitWidget({
   el: document.getElementById("current-split-card"),
+  content: document.getElementById("current-split-content"),
   root: document.getElementById("hud-comp-currentSplit"),
   getState: () => state
 });
@@ -286,6 +287,7 @@ Object.assign(app, {
   setSplitTooltipEnabled: splitTooltip.setEnabled,
   updateCurrentSplit: currentSplit.update,
   refreshCurrentSplit: currentSplit.refresh,
+  fitCurrentSplit: currentSplit.fit,
   setCurrentSplitHold: currentSplit.setHoldSeconds,
   setCurrentSplitAfterRun: currentSplit.setAfterRun,
   setCurrentSplitRows: currentSplit.setRows,
