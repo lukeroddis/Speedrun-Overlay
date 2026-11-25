@@ -14,6 +14,8 @@
  * (`update`), so it works over the dock's commands or the overlay's app.settings.
  * Plain DOM only: dock.html loads it as is, and the build inlines it into
  * dist/dock.html. Class names are prefixed `sr-` for each page to style.
+ * A host can pass `enhanceSelect(select)` to show dropdowns its own way (the overlay draws them in
+ * the page, since OBS's Interact window can't open native ones; the dock keeps native ones).
  */
 
 (function () {
@@ -38,8 +40,9 @@
    * @param {Function} options.set - (id, value) change a setting
    * @param {Function} [options.run] - (id, value) run an action setting
    * @param {Function} [options.getValue] - (id) the current value (ghost buttons toggle one id in the list)
+   * @param {Function} [options.enhanceSelect] - (select) called on each dropdown once it is in its row
    */
-  function createSettingsRenderer({ set, run = () => {}, getValue = () => undefined } = {}) {
+  function createSettingsRenderer({ set, run = () => {}, getValue = () => undefined, enhanceSelect = () => {} } = {}) {
     const updaters = [];
 
     // One control per type; each returns its element and registers an updater(values)
@@ -64,7 +67,9 @@
         const select = el("select", { className: "sr-select", onchange: () => set(def.id, select.value) },
           options.map((opt) => el("option", { value: opt, textContent: optionLabel(def, opt) })));
         updaters.push((values) => { if (document.activeElement !== select) select.value = values[def.id]; });
-        return el("div", { className: "sr-control" }, [select]);
+        const control = el("div", { className: "sr-control" }, [select]);
+        enhanceSelect(select);
+        return control;
       },
       multi(def, options) {
         return CONTROLS.ghosts(def, options);

@@ -21,7 +21,9 @@
     const renderer = window.LiveSplit.SettingsRenderer.createSettingsRenderer({
       set: (id, value) => getSettings()?.set(id, value),
       run: (id, value) => getSettings()?.run(id, value),
-      getValue: (id) => getSettings()?.get(id)
+      getValue: (id) => getSettings()?.get(id),
+      // Dropdowns drawn in the page: OBS's Interact window can't open native ones
+      enhanceSelect: (select) => window.LiveSplit.SelectMenu.enhanceSelect(select)
     });
     let subscribed = false;
 

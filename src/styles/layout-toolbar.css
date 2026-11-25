@@ -92,7 +92,8 @@ body.edit-mode .layout-toolbar {
   padding: 0 4px;
 }
 
-.toolbar-select-group select {
+.toolbar-select-group select,
+.toolbar-select-group .sm-button {
   background: rgba(30, 41, 59, 0.9);
   color: #e2e8f0;
   border: 1px solid rgba(148, 163, 184, 0.35);
@@ -107,7 +108,9 @@ body.edit-mode .layout-toolbar {
 }
 
 .toolbar-select-group select:hover,
-.toolbar-select-group select:focus {
+.toolbar-select-group select:focus,
+.toolbar-select-group .sm-button:hover,
+.toolbar-select-group .sm-button:focus {
   border-color: #38bdf8;
   background: rgba(15, 23, 42, 0.95);
   color: #ffffff;

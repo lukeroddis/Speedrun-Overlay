@@ -153,7 +153,11 @@
       SPINNERS.forEach((ids) => C.bindSplitSpinner(ids, getCurrentSplits, setVisibleSplits));
 
       const angleSelect = document.getElementById("select-split-angle");
-      if (angleSelect) angleSelect.addEventListener("change", () => applySplitAngle(angleSelect.value));
+      if (angleSelect) {
+        // Drawn in the page: OBS's Interact window can't open a native dropdown
+        window.LiveSplit.SelectMenu.enhanceSelect(angleSelect);
+        angleSelect.addEventListener("change", () => applySplitAngle(angleSelect.value));
+      }
       C.bindSegmented("#ctrl-modal-angle", applySplitAngle);
 
       C.bindSegmented("#ctrl-track-orient", setTrackOrientation);
