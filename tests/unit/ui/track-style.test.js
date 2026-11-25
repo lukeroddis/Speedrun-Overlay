@@ -243,6 +243,32 @@
         assertEqual(resolve({ orientation: "vertical", pinPos: "top", deltaPos: "left" }), "left", "a horizontal side on a vertical track falls back");
       });
 
+      it("caps the pin head at the whole pin, so its size never makes the pin taller", () => {
+        const cap = window.LiveSplit.TrackStyle.maxPinHeadSize;
+        assertEqual(cap(26, 16), 26, "default head fits");
+        assertEqual(cap(44, 16), 42, "whole pin is the length plus the 26px reference head");
+        assertEqual(cap(44, 36), 44);
+        assertEqual(cap(44, 4), 30, "a short pin allows only a small head");
+        assertEqual(cap(44, 0), 44, "a zero-length pin sits on the bar and keeps its size");
+      });
+
+      it("applyStyle draws the capped head size", () => {
+        const track = document.getElementById("track");
+        const origSize = track.style.getPropertyValue("--ghost-pin-size");
+        const origLen = track.style.getPropertyValue("--ghost-needle-length");
+        const origClass = track.className;
+        try {
+          const style = Object.assign({}, window.LiveSplit.TrackStyle.DEFAULT_TRACK_STYLE, { ghostPinLength: 4, ghostPinSize: 44 });
+          window.LiveSplit.TrackStyle.createTrackStyle({ getCurrentStyle: () => style }).applyStyle();
+          assertEqual(track.style.getPropertyValue("--ghost-pin-size"), "30px");
+          assertEqual(style.ghostPinSize, 44, "the saved setting is untouched");
+        } finally {
+          track.className = origClass;
+          track.style.setProperty("--ghost-pin-size", origSize);
+          track.style.setProperty("--ghost-needle-length", origLen);
+        }
+      });
+
       it("applyStyle repairs name/delta positions left over from the other orientation", () => {
         const track = document.getElementById("track");
         const origClass = track.className;

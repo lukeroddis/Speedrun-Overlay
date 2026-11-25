@@ -2,7 +2,8 @@
  * src/ui/track-density.js - Track Node Spacing & Auto-Angled Split Names
  *
  * Computes --node-spacing from the visible-splits preference and viewport size,
- * decides whether split titles need the 40° angled-text mode, and syncs the
+ * decides whether split titles need the 40° angled-text mode (and sizes its room to the longest
+ * name, --angled-rise), and syncs the
  * related badges, spin boxes and preset buttons.
  */
 
@@ -10,6 +11,21 @@
   "use strict";
 
   const STORAGE_KEYS = window.LiveSplit.Storage.KEYS;
+
+  // Split names tilt 40°; the current split's name is also scaled up 8%
+  const NAME_ANGLE = 40 * Math.PI / 180;
+  const CURRENT_NAME_SCALE = 1.08;
+  // Tilted names longer than this are cut with an ellipsis, so one long name can't make the track tall
+  const MAX_ANGLED_NAME_WIDTH = 160;
+
+  /**
+   * Vertical room (px, rounded up) a name of width x lineHeight needs once tilted 40° about its
+   * bottom-left corner (--angled-rise): the angled-names track is sized to fit its longest name.
+   */
+  function angledNameRise(width, lineHeight) {
+    const rise = (width * Math.sin(NAME_ANGLE) + lineHeight * Math.cos(NAME_ANGLE)) * CURRENT_NAME_SCALE;
+    return Math.ceil(rise);
+  }
 
   /**
    * @param {Object} options
@@ -115,6 +131,20 @@
     function applyAngleMode(track, shouldAngle, isVertical, anglePref) {
       if (shouldAngle) {
         track.classList.add("angled-text");
+        // Room for the tilted names: the longest one's height once tilted (every split, not just
+        // the visible ones, so scrolling never changes the track's height)
+        let maxWidth = 0;
+        let lineHeight = 0;
+        track.querySelectorAll(".split-name").forEach((el) => {
+          maxWidth = Math.max(maxWidth, el.scrollWidth);
+          lineHeight = Math.max(lineHeight, el.offsetHeight);
+        });
+        track.style.setProperty("--angled-name-max", `${MAX_ANGLED_NAME_WIDTH}px`);
+        if (maxWidth > 0) {
+          track.style.setProperty("--angled-rise", `${angledNameRise(Math.min(maxWidth, MAX_ANGLED_NAME_WIDTH), lineHeight)}px`);
+        } else {
+          track.style.removeProperty("--angled-rise");
+        }
         // Enforce opposing delta positioning when angled mode is active
         if (window.hudLayout) {
           const style = window.hudLayout.getTrackStyle();
@@ -126,6 +156,7 @@
         }
       } else {
         track.classList.remove("angled-text");
+        track.style.removeProperty("--angled-rise");
       }
 
       const angleSelect = document.getElementById("select-split-angle");
@@ -200,6 +231,8 @@
 
   window.LiveSplit = window.LiveSplit || {};
   window.LiveSplit.TrackDensity = {
+    MAX_ANGLED_NAME_WIDTH,
+    angledNameRise,
     createTrackDensityController
   };
 })();

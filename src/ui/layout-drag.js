@@ -5,6 +5,8 @@
  * - Pointerdown, pointermove, pointerup/cancel lifecycle for HUD components
  * - Touch & mouse unified drag positioning with pointer capture
  * - Proportional scaling via scale handle drag (clamped 0.4x to 2.5x)
+ * - Current Split card resizing via the same handle (Ctrl/Shift-drag scales): its box's width and
+ *   height (computeBoxResize), which its contents shrink to fit
  * - Track resizing via the same handle (Ctrl/Shift-drag scales instead): a vertical track's width
  *   (room for split text) and height (split spacing); a horizontal track's width (split spacing,
  *   floating only) and height (lines for split names, docked too)
@@ -12,6 +14,8 @@
  * - Free track dragging (docking only via the dock button; dragging a docked track undocks it),
  *   keeping its size fixed and the whole scaled track (and its resize handle) on screen
  * - Dedicated leaderboard header drag support
+ * - Edit-mode header placement (editHeaderPlacement): above the component, or below / inside it
+ *   when there is no room, so locking the layout moves nothing
  * - Dock toggle button handling (#btn-dock-track): docks to the nearest edge (top/bottom, or left/right
  *   when vertical)
  */
@@ -61,12 +65,43 @@
     return Math.max(0.4, Math.floor(Math.min(...fits) * 100) / 100);
   }
 
+  /**
+   * Where a component's edit-mode header floats, outside its box so the content does not move when
+   * the layout is locked. rect is the component's screen box; headerW / headerH the header's screen
+   * size. side: "above" when it fits above, else "below", else "inside" (overlaying the top edge, e.g.
+   * a track docked full height). alignEnd: grow leftwards from the right edge when it would run off
+   * the right of the screen from the left edge.
+   */
+  function editHeaderPlacement(rect, headerW, headerH, viewportWidth, viewportHeight) {
+    let side = "above";
+    if (rect.top < headerH) side = rect.bottom + headerH <= viewportHeight ? "below" : "inside";
+    const alignEnd = rect.left + headerW > viewportWidth && rect.right - headerW >= 0;
+    return { side, alignEnd };
+  }
+
   function isTrackFloating(state) {
     return !state.docked || state.docked === "none";
   }
 
   // Smallest unscaled track sizes the resize handle allows
   const TRACK_MIN_SIZE = Object.freeze({ verticalWidth: 180, verticalHeight: 160, horizontalWidth: 320 });
+  // The Current Split widget's box: default and smallest unscaled size
+  const CURRENT_SPLIT_SIZE = Object.freeze({ width: 280, height: 240, minWidth: 180, minHeight: 80 });
+
+  /**
+   * New unscaled box size for a resize-handle drag of (dx, dy) screen px from its top-left anchored
+   * size baseW x baseH: at least the minimums, and small enough that the scaled box stays on screen.
+   * @param {Object} op - { x, y, baseW, baseH, scale, dx, dy, minW, minH, viewportWidth, viewportHeight }
+   */
+  function computeBoxResize(op) {
+    const scale = op.scale || 1;
+    const clamp = (v, min, max) => Math.round(Math.max(min, Math.min(Math.max(min, max), v)));
+    return {
+      width: clamp(op.baseW + op.dx / scale, op.minW, (op.viewportWidth - op.x) / scale),
+      height: clamp(op.baseH + op.dy / scale, op.minH, (op.viewportHeight - op.y) / scale)
+    };
+  }
+
   // Lines a horizontal track's split names may wrap onto (its height)
   const MAX_NAME_LINES = 4;
 
@@ -243,8 +278,8 @@
 
             const state = getLayoutState()[id];
             if (id === "track" && state) freezeTrackSize(state, el, isVerticalTrack());
-            // The track resizes (LiveSplit-style) unless Ctrl/Shift is held
-            const wantsResize = id === "track" && state && !(e.ctrlKey || e.metaKey || e.shiftKey);
+            // The track and the Current Split card resize (LiveSplit-style) unless Ctrl/Shift is held
+            const wantsResize = (id === "track" || id === "currentSplit") && state && !(e.ctrlKey || e.metaKey || e.shiftKey);
             const trackEl = document.getElementById("track");
             const nameFont = trackEl ? parseFloat(getComputedStyle(trackEl).getPropertyValue("--name-font-size")) : NaN;
             activePointerOp = {
@@ -382,6 +417,21 @@
           }
           state.scale = scale;
           applyComponentLayout(activePointerOp.compId);
+        } else if (activePointerOp.type === "resize" && activePointerOp.compId === "currentSplit") {
+          Object.assign(state, computeBoxResize({
+            x: state.x,
+            y: state.y,
+            baseW: activePointerOp.baseW,
+            baseH: activePointerOp.baseH,
+            scale: state.scale,
+            dx: e.clientX - activePointerOp.startX,
+            dy: e.clientY - activePointerOp.startY,
+            minW: CURRENT_SPLIT_SIZE.minWidth,
+            minH: CURRENT_SPLIT_SIZE.minHeight,
+            viewportWidth: w,
+            viewportHeight: h
+          }));
+          applyComponentLayout("currentSplit");
         } else if (activePointerOp.type === "resize") {
           const size = computeTrackResize({
             isVertical: isVerticalTrack(),
@@ -459,10 +509,13 @@
     fitTrackBox,
     freezeTrackSize,
     computeTrackResize,
+    computeBoxResize,
+    CURRENT_SPLIT_SIZE,
     TRACK_MIN_SIZE,
     MAX_NAME_LINES,
     effectiveDockSide,
     chooseDockSide,
+    editHeaderPlacement,
     createLayoutDrag
   };
 })();

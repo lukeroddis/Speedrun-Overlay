@@ -58,6 +58,19 @@
   const PIN_POS_TO_VERTICAL = { top: "left", bottom: "right" };
   const PIN_POS_TO_HORIZONTAL = { left: "top", right: "bottom" };
 
+  // The head size the pin length is measured with: the whole pin is the pin length plus this
+  const REFERENCE_PIN_HEAD = 26;
+
+  /**
+   * The pin head size actually drawn: the configured size, capped at the whole pin (pin length
+   * plus the 26px reference head) so a bigger head shortens the needle but never makes the pin
+   * taller. A zero-length pin sits on the bar and keeps its size.
+   */
+  function maxPinHeadSize(pinSize, pinLength) {
+    if (!(pinLength > 0)) return pinSize;
+    return Math.min(pinSize, pinLength + REFERENCE_PIN_HEAD);
+  }
+
   /**
    * Which side of the bar ghost/race pins stand on.
    * @param {Object} style - Track style
@@ -279,7 +292,9 @@
       track.style.setProperty("--ghost-needle-length", `${pinLength}px`);
       track.classList.toggle("ghost-on-track", pinLength === 0);
 
-      const pinSize = (currentTrackStyle.ghostPinSize != null ? currentTrackStyle.ghostPinSize : 26);
+      // The pin length is the whole pin (needle plus a 26px reference head), so a head never
+      // grows past it: that keeps the pin size from changing the track's height
+      const pinSize = maxPinHeadSize(currentTrackStyle.ghostPinSize != null ? currentTrackStyle.ghostPinSize : 26, pinLength);
       root.style.setProperty("--ghost-pin-size", `${pinSize}px`);
       track.style.setProperty("--ghost-pin-size", `${pinSize}px`);
 
@@ -375,6 +390,7 @@
   window.LiveSplit = window.LiveSplit || {};
   window.LiveSplit.TrackStyle = {
     DEFAULT_TRACK_STYLE,
+    maxPinHeadSize,
     WIDGET_STYLE_KEYS,
     TRACK_STYLE_KEY,
     SPLIT_DENSITY_KEY,

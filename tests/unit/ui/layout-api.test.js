@@ -204,6 +204,40 @@
       delete state.track.height;
     }));
 
+    it("stacks the timers one above the other, saved with the layout and set through the registry", () => withHud(({ el, state }) => {
+      const timers = el("hud-comp-timers");
+      assertEqual(state.timers.layout, "row", "side by side by default");
+      HL().setTimerLayout("stacked");
+      assert(timers.classList.contains("timers-stacked"));
+      assertEqual(JSON.parse(localStorage.getItem(KEYS.HUD_LAYOUT)).timers.layout, "stacked", "saved");
+
+      HL().setTimerLayout("diagonal");
+      assertEqual(state.timers.layout, "stacked", "unknown layouts ignored");
+
+      const def = window.LiveSplit.SettingsRegistry.getSettingDef("timerLayout");
+      assertEqual(def.get(), "stacked");
+      def.set({}, "row");
+      assert(!timers.classList.contains("timers-stacked"), "back side by side");
+      assertEqual(def.get(), "row");
+    }));
+
+    it("puts Game Time first (left, or on top when stacked) when asked, saved and set through the registry", () => withHud(({ el, state }) => {
+      const timers = el("hud-comp-timers");
+      assertEqual(state.timers.order, "realFirst", "Real Time first by default");
+      HL().setTimerOrder("gameFirst");
+      assert(timers.classList.contains("timers-game-first"));
+      assertEqual(JSON.parse(localStorage.getItem(KEYS.HUD_LAYOUT)).timers.order, "gameFirst", "saved");
+
+      HL().setTimerOrder("sideways");
+      assertEqual(state.timers.order, "gameFirst", "unknown orders ignored");
+
+      const def = window.LiveSplit.SettingsRegistry.getSettingDef("timerOrder");
+      assertEqual(def.get(), "gameFirst");
+      def.set({}, "realFirst");
+      assert(!timers.classList.contains("timers-game-first"), "Real Time first again");
+      assertEqual(def.get(), "realFirst");
+    }));
+
     it("positions the timers from their right edge when right-anchored, left edge when left-anchored", () => withHud(({ el, state }) => {
       const timers = el("hud-comp-timers");
       Object.assign(state.timers, { x: 100, y: 30, scale: 1, anchor: "right", right: 25 });
@@ -231,6 +265,29 @@
 
       HL().setEditMode(true);
       assert(title.classList.contains("edit-hidden") && !title.classList.contains("is-hidden"), "edit mode shows it dimmed");
+    }));
+
+    it("edit mode floats each header above its component, or below it at the top of the screen", () => withHud(({ el, state }) => {
+      const title = el("hud-comp-title");
+      const header = document.createElement("div");
+      header.className = "hud-component-header";
+      header.style.cssText = "position: absolute; width: 200px; height: 24px;";
+      title.prepend(header);
+      title.style.width = "300px";
+      title.style.height = "60px";
+
+      Object.assign(state.title, { visible: true, scale: 1, x: 40, y: 200 });
+      HL().setEditMode(true);
+      assert(!title.classList.contains("edit-header-below") && !title.classList.contains("edit-header-inside"), "room above: stays above");
+
+      state.title.y = 0;
+      HL().applyComponentLayout("title");
+      assert(title.classList.contains("edit-header-below"), "at the top edge it hangs below");
+
+      Object.assign(state.title, { y: 200, x: window.innerWidth - 100 });
+      header.style.width = "260px";
+      HL().applyComponentLayout("title");
+      assert(title.classList.contains("edit-header-end"), "near the right edge it grows leftwards");
     }));
 
     it("setComponentVisible hides / shows a component, saves, and creates a missing entry", () => withHud(({ el, state }) => {

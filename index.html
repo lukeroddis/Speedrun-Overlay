@@ -17,6 +17,7 @@
   <link rel="stylesheet" href="src/styles/settings-profiles.css">
   <link rel="stylesheet" href="src/styles/track-modal.css">
   <link rel="stylesheet" href="src/styles/widget-popover.css">
+  <link rel="stylesheet" href="src/styles/select-menu.css">
   <link rel="stylesheet" href="src/styles/ghost-markers.css">
   <link rel="stylesheet" href="src/styles/toast.css">
   <link rel="stylesheet" href="src/styles/race-pins.css">
@@ -124,8 +125,8 @@
         <button type="button" class="hud-btn-icon hud-btn-visibility" data-action="toggle-visibility" title="Hide widget" aria-label="Hide widget">✕</button>
       </div>
     </div>
-    <div class="current-split-card" id="current-split-card" aria-live="off"></div>
-    <div class="hud-resize-handle" title="Drag horizontally to scale">⤡</div>
+    <div class="current-split-card" id="current-split-card" aria-live="off"><div class="current-split-content" id="current-split-content"></div></div>
+    <div class="hud-resize-handle" title="Drag to resize the card (its contents shrink to fit). Ctrl/Shift-drag to scale">⤡</div>
   </div>
 
   <!-- HUD Component 3: Split Progress Track -->
@@ -525,11 +526,11 @@
       <div class="sr-rows" data-settings="ghostsOn ghosts"></div>
       <!-- Pin style: ghost pins and race pins -->
       <div class="modal-section-title">Pin Style</div>
-      <div class="modal-row" id="row-ghost-pin-length">
+      <div class="modal-row" id="row-ghost-pin-length" title="How far pins reach from the bar, head included (0: pins ride on the bar). Sets the room pins take on the track">
         <label>Ghost Pin Length (Open Track) <span class="val-badge" id="val-ghost-pin-length">16px</span></label>
         <input type="range" id="slider-ghost-pin-length" min="0" max="36" value="16" step="1">
       </div>
-      <div class="modal-row" id="row-ghost-pin-size">
+      <div class="modal-row" id="row-ghost-pin-size" title="A bigger head shortens the needle, so the track keeps its height. A head never grows past the whole pin">
         <label>Ghost Pinhead Size <span class="val-badge" id="val-ghost-pin-size">26px</span></label>
         <input type="range" id="slider-ghost-pin-size" min="18" max="44" value="26" step="1">
       </div>
@@ -589,7 +590,7 @@
         </label>
         <span style="font-size: 11px; color: #94a3b8; line-height: 1.4;">Tracks LiveSplit comparison and timing method switches in real time without replicating hotkeys.</span>
       </div>
-      <div class="sr-rows" data-settings="timerDisplay timingMethod"></div>
+      <div class="sr-rows" data-settings="timerDisplay timingMethod timerLayout timerOrder"></div>
       <div class="modal-row" id="row-timer-expansion">
         <label>Timer Expansion &amp; Alignment</label>
         <div class="seg-btn-group" id="ctrl-timer-expansion">
@@ -738,11 +739,13 @@
   <script src="src/ui/leaderboard-row.js"></script>
   <script src="src/ui/leaderboard.js"></script>
   <script src="src/ui/race-track-markers.js"></script>
+  <script src="src/ui/pin-tag-placement.js"></script>
   <script src="src/ui/toast-manager.js"></script>
   <script src="src/ui/timer-display.js"></script>
   <script src="src/ui/timer-anchor.js"></script>
   <script src="src/ui/game-logo.js"></script>
   <script src="src/ui/settings-controls.js"></script>
+  <script src="src/ui/select-menu.js"></script>
   <script src="src/ui/settings-renderer.js"></script>
   <script src="src/ui/settings-dialog-rows.js"></script>
   <script src="src/ui/settings-track-panel.js"></script>

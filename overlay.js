@@ -186,6 +186,7 @@ const splitTooltip = window.LiveSplit.SplitTooltip.createSplitTooltip({
 // Current Split widget (src/ui/current-split.js): follows the run every poll
 const currentSplit = window.LiveSplit.CurrentSplit.createCurrentSplitWidget({
   el: document.getElementById("current-split-card"),
+  content: document.getElementById("current-split-content"),
   root: document.getElementById("hud-comp-currentSplit"),
   getState: () => state
 });
@@ -233,6 +234,8 @@ function initOverlay() {
   window.LiveSplit.SettingsMenu.initSettingsMenuDraggable();
   setupTrackScrollInteractions();
   splitTooltip.bind();
+  // Pin hover tags go on whichever side the track has room for
+  window.LiveSplit.PinTagPlacement.bindPinTagPlacement();
   app.loadCachedSplits();
   updateTrackDensityAndAngle();
 
@@ -272,6 +275,7 @@ Object.assign(app, {
   getOrCreateGhostMarker: ghostRunner.getOrCreateGhostMarker,
   refreshLeaderboard: ghostRunner.refreshLeaderboard,
   updateGhostRunner: ghostRunner.updateGhostRunner,
+  refreshIdlePins: ghostRunner.refreshIdlePins,
   setGhostComparison: ghostRunner.setGhostComparison,
   toggleGhostComparison: ghostRunner.toggleGhostComparison,
   cycleGhostComparison: ghostRunner.cycleGhostComparison,
@@ -285,6 +289,7 @@ Object.assign(app, {
   setSplitTooltipEnabled: splitTooltip.setEnabled,
   updateCurrentSplit: currentSplit.update,
   refreshCurrentSplit: currentSplit.refresh,
+  fitCurrentSplit: currentSplit.fit,
   setCurrentSplitHold: currentSplit.setHoldSeconds,
   setCurrentSplitAfterRun: currentSplit.setAfterRun,
   setCurrentSplitRows: currentSplit.setRows,

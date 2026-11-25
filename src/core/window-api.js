@@ -59,6 +59,8 @@
       getNodeTextThreshold: app.getNodeTextThreshold,
       setGhostOpacity: app.setGhostOpacity,
       updateGhostRunner: app.updateGhostRunner,
+      // Pin room and Edit Layout Mode preview pins outside a run
+      refreshIdlePins: app.refreshIdlePins,
 
       // Run progress & track
       handleUndoSplit: app.handleUndoSplit,
@@ -86,6 +88,8 @@
         app.updateTrackStatus(state.currentIndex);
       },
       setupTrackScrollInteractions: app.setupTrackScrollInteractions,
+      // Shrink the Current Split card to fit its widget after a resize
+      fitCurrentSplit: app.fitCurrentSplit,
 
       // Live settings by id (src/core/settings-registry.js)
       settings: app.settings,

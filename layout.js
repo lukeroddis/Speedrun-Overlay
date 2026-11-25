@@ -11,6 +11,7 @@
   const COMPONENTS = window.LiveSplit.LayoutEngine.COMPONENTS;
 
   const DEFAULT_TRACK_STYLE = window.LiveSplit.TrackStyle.DEFAULT_TRACK_STYLE;
+  const CURRENT_SPLIT_SIZE = window.LiveSplit.LayoutDrag.CURRENT_SPLIT_SIZE;
 
   const LOGO_STORAGE_KEY = STORAGE_KEYS.CUSTOM_LOGO;
 
@@ -62,7 +63,11 @@
         scale: 1.0,
         visible: true,
         docked: "none",
-        anchor: "auto"
+        anchor: "auto",
+        // "row": Real and Game time side by side; "stacked": one above the other
+        layout: "row",
+        // Which timer comes first (left, or top when stacked): "realFirst" | "gameFirst"
+        order: "realFirst"
       },
       track: {
         x: 0,
@@ -75,6 +80,9 @@
       currentSplit: {
         x: Math.max(42, w - 340),
         y: 130,
+        // Fixed box (resize handle), so the card never grows mid-run: contents shrink to fit
+        width: CURRENT_SPLIT_SIZE.width,
+        height: CURRENT_SPLIT_SIZE.height,
         scale: 1.0,
         visible: false,
         docked: "none"
@@ -367,6 +375,26 @@
     return e ? e.getAnchor() : ((layoutState && layoutState.timers && layoutState.timers.anchor) || localStorage.getItem(STORAGE_KEYS.TIMER_ANCHOR) || "auto");
   }
 
+  /** Timers side by side ("row") or one above the other ("stacked"); saved with the layout. */
+  function setTimerLayout(value) {
+    if (value !== "row" && value !== "stacked") return;
+    if (!layoutState) layoutState = loadSavedLayout();
+    if (!layoutState.timers) layoutState.timers = getDefaultLayout().timers;
+    layoutState.timers.layout = value;
+    applyComponentLayout("timers");
+    saveLayout();
+  }
+
+  /** Real Time first ("realFirst", left / top) or Game Time first ("gameFirst"); saved with the layout. */
+  function setTimerOrder(value) {
+    if (value !== "realFirst" && value !== "gameFirst") return;
+    if (!layoutState) layoutState = loadSavedLayout();
+    if (!layoutState.timers) layoutState.timers = getDefaultLayout().timers;
+    layoutState.timers.order = value;
+    applyComponentLayout("timers");
+    saveLayout();
+  }
+
   function setTimerAnchor(anchor) {
     const e = getTimerAnchorEngine();
     if (e) {
@@ -442,6 +470,33 @@
   }
 
   function applyComponentLayout(compId) {
+    positionComponent(compId);
+    if (isEditMode) placeEditHeader(document.getElementById(`hud-comp-${compId}`));
+  }
+
+  /**
+   * Floats the component's edit-mode header outside its box (above, or below / inside when there is
+   * no room), so the content is laid out exactly as it will be once the layout is locked.
+   */
+  function placeEditHeader(el) {
+    const header = el && el.querySelector(".hud-component-header");
+    if (!header) return;
+    const rect = el.getBoundingClientRect();
+    if (!rect.width && !rect.height) return; // hidden
+    const scale = el.offsetWidth > 0 ? rect.width / el.offsetWidth : 1;
+    const placement = window.LiveSplit.LayoutDrag.editHeaderPlacement(
+      rect,
+      (header.offsetWidth || rect.width) * scale,
+      (header.offsetHeight || 28) * scale,
+      window.innerWidth || 1920,
+      window.innerHeight || 1080
+    );
+    el.classList.toggle("edit-header-below", placement.side === "below");
+    el.classList.toggle("edit-header-inside", placement.side === "inside");
+    el.classList.toggle("edit-header-end", placement.alignEnd);
+  }
+
+  function positionComponent(compId) {
     const el = document.getElementById(`hud-comp-${compId}`);
     if (!el) return;
     if (!layoutState) layoutState = loadSavedLayout();
@@ -570,6 +625,9 @@
 
     // Standard floating component (title, timers)
     if (compId === "timers") {
+      // Before measuring: stacking changes the widget's width
+      el.classList.toggle("timers-stacked", state.layout === "stacked");
+      el.classList.toggle("timers-game-first", state.order === "gameFirst");
       const anchorPref = getTimerAnchor();
       const compWidth = el.offsetWidth || 300;
       let isRight = false;
@@ -604,12 +662,17 @@
       return;
     }
 
+    if (compId === "currentSplit") {
+      el.style.width = `${state.width > 0 ? state.width : CURRENT_SPLIT_SIZE.width}px`;
+      el.style.height = `${state.height > 0 ? state.height : CURRENT_SPLIT_SIZE.height}px`;
+    }
     el.style.left = `${state.x}px`;
     el.style.right = "auto";
     el.style.top = `${state.y}px`;
     el.style.bottom = "";
     el.style.transform = `scale(${state.scale})`;
     el.style.transformOrigin = "top left";
+    if (compId === "currentSplit") window.LiveSplit.Overlay.fitCurrentSplit?.();
   }
 
   function applyAllLayouts() {
@@ -646,6 +709,8 @@
       saveLayout();
     }
     applyAllLayouts();
+    // Ghost pins show as previews while editing (and go when locked), so the layout matches the run
+    window.LiveSplit.Overlay.refreshIdlePins?.();
     const rc = window.LiveSplit.RaceClient ? (window.LiveSplit.RaceClient.instance || window.LiveSplit.RaceClient) : null;
     if (typeof window.LiveSplit.Leaderboard?.renderLeaderboard === "function") {
       const isSim = rc ? (typeof rc.isSimulating === "function" ? rc.isSimulating() : !!rc.isSimulating) : false;
@@ -782,6 +847,8 @@
     syncProfileUI,
     getTimerAnchor,
     setTimerAnchor,
+    setTimerLayout,
+    setTimerOrder,
     cycleTimerAnchor,
     syncTimerAnchorUI
   };

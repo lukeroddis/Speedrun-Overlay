@@ -141,6 +141,8 @@
       const isWindowed = updateTrackWindow(idx);
       window.LiveSplit.TrackRenderer.scrollTrackToIndex(idx, isWindowed, isVertical);
       app.updateCurrentSplit();
+      // Pin room, and preview pins in Edit Layout Mode, while no run is ticking
+      app.refreshIdlePins();
     }
 
     /**

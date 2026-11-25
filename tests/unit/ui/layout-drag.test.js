@@ -14,6 +14,18 @@
       assertEqual(typeof window.LiveSplit.LayoutDrag.computeScale, "function", "computeScale is a function");
     });
 
+    it("editHeaderPlacement floats the header above, below or inside, and grows it leftwards at the right edge", () => {
+      const place = window.LiveSplit.LayoutDrag.editHeaderPlacement;
+      const box = (left, top, width, height) => ({ left, top, right: left + width, bottom: top + height, width, height });
+      assertEqual(place(box(100, 200, 300, 80), 250, 26, 1920, 1080), { side: "above", alignEnd: false }, "room above");
+      assertEqual(place(box(100, 10, 300, 80), 250, 26, 1920, 1080), { side: "below", alignEnd: false }, "too close to the top");
+      assertEqual(place(box(0, 0, 340, 1080), 250, 26, 1920, 1080), { side: "inside", alignEnd: false }, "full-height docked track");
+      assertEqual(place(box(0, 1000, 1920, 80), 250, 26, 1920, 1080).side, "above", "bottom-docked track");
+      assertEqual(place(box(0, 0, 1920, 80), 250, 26, 1920, 1080).side, "below", "top-docked track");
+      assertEqual(place(box(1800, 200, 100, 60), 250, 26, 1920, 1080).alignEnd, true, "would run off the right edge");
+      assertEqual(place(box(10, 200, 100, 60), 250, 26, 200, 1080).alignEnd, false, "growing leftwards would run off the left edge too");
+    });
+
     it("clamps drag coordinates within viewport bounds", () => {
       const clamp = window.LiveSplit.LayoutDrag.clampCoordinates;
 
@@ -99,6 +111,16 @@
       const side = window.LiveSplit.LayoutDrag.effectiveDockSide;
       assertEqual(["top", "bottom", "left", "right"].map((d) => side(d, false)), ["top", "bottom", "bottom", "bottom"]);
       assertEqual(["top", "bottom", "left", "right"].map((d) => side(d, true)), ["left", "left", "left", "right"]);
+    });
+
+    it("computeBoxResize sizes the Current Split box, clamped to its minimum and the screen", () => {
+      const resize = window.LiveSplit.LayoutDrag.computeBoxResize;
+      const base = { x: 100, y: 100, baseW: 280, baseH: 240, scale: 1, minW: 180, minH: 80, viewportWidth: 1000, viewportHeight: 800 };
+      assertEqual(resize(Object.assign({}, base, { dx: 40, dy: -40 })), { width: 320, height: 200 }, "both axes");
+      assertEqual(resize(Object.assign({}, base, { dx: -500, dy: -500 })), { width: 180, height: 80 }, "minimum size");
+      assertEqual(resize(Object.assign({}, base, { dx: 5000, dy: 5000 })), { width: 900, height: 700 }, "stops at the screen edge");
+      assertEqual(resize(Object.assign({}, base, { scale: 2, dx: 40, dy: 40 })), { width: 300, height: 260 }, "screen px divided by the scale");
+      assertEqual(resize(Object.assign({}, base, { scale: 2, dx: 5000, dy: 5000 })), { width: 450, height: 350 }, "the scaled box stays on screen");
     });
 
     it("computeTrackResize clamps to the minimum size and the screen, and divides out the scale", () => {

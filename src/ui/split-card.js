@@ -7,8 +7,8 @@
  *   position, delta and split time once done, the expected segment (and split time) before, and
  *   its segment times (this run, PB, best, average, WR) with the possible time save
  * - renderRunSummaryHtml: a finished run (view model: LiveSplit.RunSummary.buildRunSummary)
- * - createSplitCard(el): fills an element with either, rebuilding its markup only when that
- *   changes. The current split's live segment is a slot `tick(elapsedSec)` writes as text, so a
+ * - createSplitCard(el, { content, onChange }): fills an element (or its `content` child) with
+ *   either, rebuilding its markup only when that changes (then calling `onChange`). The current split's live segment is a slot `tick(elapsedSec)` writes as text, so a
  *   card can follow the run every poll without allocating DOM. `flash(type, ms)` plays the
  *   leaderboard's split glow (src/styles/split-flash.css) on the element.
  */
@@ -109,9 +109,14 @@
   }
 
   /**
-   * @param {HTMLElement} el - The element the card fills (its flash plays on it too)
+   * @param {HTMLElement} el - The card element (its flash and overdue state play on it)
+   * @param {Object} [options]
+   * @param {HTMLElement} [options.content] - Where the markup goes (default: el itself)
+   * @param {Function} [options.onChange] - Called after the markup is rebuilt
    */
-  function createSplitCard(el) {
+  function createSplitCard(el, options = {}) {
+    const content = options.content || el;
+    const onChange = options.onChange || (() => {});
     let lastHtml = "";
     let liveEl = null;
     let liveText = "";
@@ -121,10 +126,11 @@
 
     function setHtml(html) {
       if (html === lastHtml) return;
-      el.innerHTML = html;
+      content.innerHTML = html;
       lastHtml = html;
-      liveEl = el.querySelector("[data-live]");
+      liveEl = content.querySelector("[data-live]");
       liveText = "";
+      onChange();
     }
 
     function setOverdue(value) {
